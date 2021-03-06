@@ -11,5 +11,5 @@ public:
     DFWAPCP(QWidget *parent = Q_NULLPTR);
 
 private:
-    Ui::DFWAPCPClass ui;
+    Ui::PanoWindow1 ui;
 };
