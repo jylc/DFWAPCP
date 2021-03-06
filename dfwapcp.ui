@@ -1,0 +1,627 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PanoWindow1</class>
+ <widget class="QWidget" name="PanoWindow1">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1278</width>
+    <height>691</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string notr="true">Panoramic</string>
+  </property>
+  <property name="windowIcon">
+   <iconset theme="view-fullscreen">
+    <normaloff>.</normaloff>.</iconset>
+  </property>
+  <widget class="OpenGLCanvas" name="GLCanvas" native="true">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>1111</width>
+     <height>673</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="baseSize">
+    <size>
+     <width>0</width>
+     <height>0</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>1126</x>
+     <y>9</y>
+     <width>150</width>
+     <height>671</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="mainLayout">
+    <item>
+     <layout class="QVBoxLayout" name="visualizationLayout">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Visualization</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBox_2">
+        <item>
+         <property name="text">
+          <string>Moebius</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>3D Sphere</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Equi-Rectangular</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Perspective</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Stereographic</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Orthographic</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Mercator</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Pannini</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Zorin-Barr</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Shrink computation</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBox">
+        <property name="editable">
+         <bool>false</bool>
+        </property>
+        <property name="modelColumn">
+         <number>0</number>
+        </property>
+        <item>
+         <property name="text">
+          <string>Simple</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Square Root</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Linear</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Square Power</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Cubic Power</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Logarithm</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="optionsLayout">
+      <item>
+       <widget class="QCheckBox" name="shrinkAll">
+        <property name="text">
+         <string>Shrink all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="automax">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Auto FOV max</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QGridLayout" name="slidersLayout">
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_6">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>70</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>FOV</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLCDNumber" name="fovmaxled">
+        <property name="minimumSize">
+         <size>
+          <width>46</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="digitCount">
+         <number>3</number>
+        </property>
+        <property name="segmentStyle">
+         <enum>QLCDNumber::Flat</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>70</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>FOV max</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLCDNumber" name="fovled">
+        <property name="minimumSize">
+         <size>
+          <width>46</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="digitCount">
+         <number>3</number>
+        </property>
+        <property name="segmentStyle">
+         <enum>QLCDNumber::Flat</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QSlider" name="changefovmax">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>29</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>359</number>
+        </property>
+        <property name="sliderPosition">
+         <number>60</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::NoTicks</enum>
+        </property>
+        <property name="tickInterval">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSlider" name="changefov">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>29</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>359</number>
+        </property>
+        <property name="value">
+         <number>60</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="buttonsLayout">
+      <item>
+       <widget class="QPushButton" name="reCenter">
+        <property name="text">
+         <string>Re-center</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="chooseFile">
+        <property name="text">
+         <string>Input Image</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>Close</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>OpenGLCanvas</class>
+   <extends>QWidget</extends>
+   <header location="global">openglcanvas.h</header>
+   <container>1</container>
+   <slots>
+    <signal>fov_changed(int)</signal>
+    <signal>max_fov_changed(int)</signal>
+    <slot>change_fov(double)</slot>
+    <slot>change_scale(double)</slot>
+    <slot>change_center_lambda(double)</slot>
+    <slot>change_center_phi(double)</slot>
+    <slot>change_fov_scale_relation(QString)</slot>
+    <slot>change_visualization(QString)</slot>
+    <slot>change_input_image()</slot>
+    <slot>change_fov_max(int)</slot>
+    <slot>change_fov(int)</slot>
+    <slot>re_center()</slot>
+    <slot>automaxbutton(bool)</slot>
+    <slot>shrinkallbutton(bool)</slot>
+    <slot>change_zb_lambda(int)</slot>
+    <slot>change_zb_R(int)</slot>
+    <slot>change_p_d(int)</slot>
+   </slots>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>PanoWindow1</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>640</x>
+     <y>490</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>364</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>comboBox</sender>
+   <signal>activated(QString)</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>change_fov_scale_relation(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>603</x>
+     <y>50</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>492</x>
+     <y>77</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>comboBox_2</sender>
+   <signal>activated(QString)</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>change_visualization(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>554</x>
+     <y>106</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>492</x>
+     <y>132</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>chooseFile</sender>
+   <signal>clicked()</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>change_input_image()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>640</x>
+     <y>457</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>247</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>changefov</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>change_fov(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>607</x>
+     <y>352</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>250</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>GLCanvas</sender>
+   <signal>fov_changed(int)</signal>
+   <receiver>changefov</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>250</x>
+     <y>249</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>607</x>
+     <y>324</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>reCenter</sender>
+   <signal>clicked()</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>re_center()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>640</x>
+     <y>424</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>250</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>changefovmax</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>change_fov_max(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>546</x>
+     <y>391</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>250</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>GLCanvas</sender>
+   <signal>max_fov_changed(int)</signal>
+   <receiver>changefovmax</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>250</x>
+     <y>249</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>532</x>
+     <y>262</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>changefov</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>fovled</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>606</x>
+     <y>245</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>236</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>changefovmax</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>fovmaxled</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>532</x>
+     <y>248</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>555</x>
+     <y>236</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>GLCanvas</sender>
+   <signal>fov_changed(int)</signal>
+   <receiver>fovled</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>250</x>
+     <y>249</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>629</x>
+     <y>236</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>GLCanvas</sender>
+   <signal>max_fov_changed(int)</signal>
+   <receiver>fovmaxled</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>250</x>
+     <y>249</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>555</x>
+     <y>236</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>automax</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>automaxbutton(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>504</x>
+     <y>174</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>454</x>
+     <y>172</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>shrinkAll</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>shrinkallbutton(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>540</x>
+     <y>185</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>247</x>
+     <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
