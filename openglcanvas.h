@@ -28,7 +28,9 @@
 #include <opencv2/opencv.hpp>
 #include "chronos.h"
 #include <QtGui/qopenglfunctions.h>
-
+#include "effectdrawing.h"
+#include <vector>
+#include <string>
 
 class OpenGLCanvas:
         public QGLWidget, protected QOpenGLFunctions
@@ -68,6 +70,8 @@ signals:
     void max_fov_changed(int new_max_fov);
 
 public slots:
+    void show_effected_imgs();
+
     void automaxbutton(bool);
     void shrinkallbutton(bool);
     void change_fov(double f);
@@ -120,6 +124,8 @@ private:
     char* shader_dir;
     char* input_image_file;
     char* input_image_dir;
+    std::vector<std::string> img_info;
+
 
     // input image size
     int image_size_x;

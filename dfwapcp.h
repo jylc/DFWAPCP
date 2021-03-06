@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QWidget>
 #include "ui_dfwapcp.h"
+#include "effectdrawing.h"
 
 class DFWAPCP : public QWidget
 {

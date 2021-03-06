@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1278</width>
-    <height>677</height>
+    <height>722</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -342,6 +342,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="effectButton">
+        <property name="text">
+         <string>Show Images</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButton">
         <property name="text">
          <string>Close</string>
@@ -378,6 +385,7 @@
     <slot>change_zb_lambda(int)</slot>
     <slot>change_zb_R(int)</slot>
     <slot>change_p_d(int)</slot>
+    <slot>show_effected_imgs()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -390,8 +398,8 @@
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>640</x>
-     <y>490</y>
+     <x>1128</x>
+     <y>677</y>
     </hint>
     <hint type="destinationlabel">
      <x>629</x>
@@ -406,8 +414,8 @@
    <slot>change_fov_scale_relation(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>603</x>
-     <y>50</y>
+     <x>1128</x>
+     <y>92</y>
     </hint>
     <hint type="destinationlabel">
      <x>492</x>
@@ -422,8 +430,8 @@
    <slot>change_visualization(QString)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>554</x>
-     <y>106</y>
+     <x>1128</x>
+     <y>48</y>
     </hint>
     <hint type="destinationlabel">
      <x>492</x>
@@ -438,8 +446,8 @@
    <slot>change_input_image()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>640</x>
-     <y>457</y>
+     <x>1128</x>
+     <y>619</y>
     </hint>
     <hint type="destinationlabel">
      <x>247</x>
@@ -454,8 +462,8 @@
    <slot>change_fov(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>607</x>
-     <y>352</y>
+     <x>1204</x>
+     <y>537</y>
     </hint>
     <hint type="destinationlabel">
      <x>250</x>
@@ -474,8 +482,8 @@
      <y>249</y>
     </hint>
     <hint type="destinationlabel">
-     <x>607</x>
-     <y>324</y>
+     <x>1204</x>
+     <y>509</y>
     </hint>
    </hints>
   </connection>
@@ -486,8 +494,8 @@
    <slot>re_center()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>640</x>
-     <y>424</y>
+     <x>1128</x>
+     <y>590</y>
     </hint>
     <hint type="destinationlabel">
      <x>250</x>
@@ -502,8 +510,8 @@
    <slot>change_fov_max(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>546</x>
-     <y>391</y>
+     <x>1128</x>
+     <y>559</y>
     </hint>
     <hint type="destinationlabel">
      <x>250</x>
@@ -522,8 +530,8 @@
      <y>249</y>
     </hint>
     <hint type="destinationlabel">
-     <x>532</x>
-     <y>262</y>
+     <x>1128</x>
+     <y>447</y>
     </hint>
    </hints>
   </connection>
@@ -534,12 +542,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>606</x>
-     <y>245</y>
+     <x>1204</x>
+     <y>430</y>
     </hint>
     <hint type="destinationlabel">
-     <x>629</x>
-     <y>236</y>
+     <x>1204</x>
+     <y>187</y>
     </hint>
    </hints>
   </connection>
@@ -550,12 +558,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>532</x>
-     <y>248</y>
+     <x>1128</x>
+     <y>433</y>
     </hint>
     <hint type="destinationlabel">
-     <x>555</x>
-     <y>236</y>
+     <x>1128</x>
+     <y>187</y>
     </hint>
    </hints>
   </connection>
@@ -570,8 +578,8 @@
      <y>249</y>
     </hint>
     <hint type="destinationlabel">
-     <x>629</x>
-     <y>236</y>
+     <x>1204</x>
+     <y>187</y>
     </hint>
    </hints>
   </connection>
@@ -586,8 +594,8 @@
      <y>249</y>
     </hint>
     <hint type="destinationlabel">
-     <x>555</x>
-     <y>236</y>
+     <x>1128</x>
+     <y>187</y>
     </hint>
    </hints>
   </connection>
@@ -598,8 +606,8 @@
    <slot>automaxbutton(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>504</x>
-     <y>174</y>
+     <x>1128</x>
+     <y>138</y>
     </hint>
     <hint type="destinationlabel">
      <x>454</x>
@@ -614,12 +622,28 @@
    <slot>shrinkallbutton(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>540</x>
-     <y>185</y>
+     <x>1128</x>
+     <y>116</y>
     </hint>
     <hint type="destinationlabel">
      <x>247</x>
      <y>249</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>effectButton</sender>
+   <signal>clicked()</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>show_effected_imgs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1200</x>
+     <y>637</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>345</y>
     </hint>
    </hints>
   </connection>

@@ -358,6 +358,15 @@ void OpenGLCanvas::initializeGL() {
     else {
     load_image(input_image_file);
    }
+    img_info.push_back(input_image_dir);
+    img_info.push_back(input_image_file);
+    std::string tmp(input_image_file);
+    size_t pos = tmp.find_first_of('.');
+    input_image_file[pos] = '\0';
+    char* s = strcat(input_image_file, ".png");
+    img_info.push_back("G:/VSProject/DFWAPCP/data/masks/");
+    img_info.push_back(s);
+    fprintf(stderr, "input_image_file : %s", input_image_file);
     free(input_image_file);
 
     // mesh resolution
@@ -810,22 +819,12 @@ void OpenGLCanvas::setShaders() {
     glBindAttribLocation(p, ZBL_ATTR, "zblambda");
     glVertexAttrib1f(ZBR_ATTR, zbR);
     glBindAttribLocation(p, ZBR_ATTR, "zbR");
-    
-
-    //绑定d和focal_length
-    //glVertexAttrib1f(P_ATTR,d);
-    //glBindAttribLocation(p, P_ATTR,"d");
-    //glVertexAttrib1f(FL_ATTR,focal_length);
-    //glBindAttribLocation(p,FL_ATTR,"focal_length");
-
-
-
+  
     glAttachShader(p, v);
     glAttachShader(p, f);
 
     glLinkProgram(p);
     glUseProgram(p);
-
 }
 
 void OpenGLCanvas::mousePressEvent(QMouseEvent* event) {
@@ -913,5 +912,11 @@ void OpenGLCanvas::paintGL() {
     time_frames = 0;
     time_time.reset();
     emit fps(QString("%1 fps").arg((int)(time_fps + 0.5)));
-
 }
+
+void OpenGLCanvas::show_effected_imgs()
+{
+    effectdrawing* drawing = new effectdrawing(img_info);
+    drawing->show();
+}
+

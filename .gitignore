@@ -1,3 +1,5 @@
 /x64
 /.vs
 /input_images
+/data
+.panorc

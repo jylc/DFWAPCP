@@ -4,6 +4,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/types.hpp>
 
+#define DETECT_BUFFER_SIZE 0x20000
 
 const int GRID_SIZE = 40;
 const int GRID_VERTEX_SIZE = 4;

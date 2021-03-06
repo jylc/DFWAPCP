@@ -1,5 +1,5 @@
-shader_dir=G:/VSProject/QtWidgetsApplication1/shaders
-image_file=grid-circle.png
-image_dir=G:/VSProject/QtWidgetsApplication1/input_images
-fov=<starting value of fov, in degrees>
+shader_dir=G:/VSProject/DFWAPCP/shaders
+image_file=paper_2.JPG
+image_dir=G:/VSProject/DFWAPCP/data/pics/
+fov=120
 max_fov=60
