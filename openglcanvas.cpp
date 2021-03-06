@@ -72,7 +72,7 @@ OpenGLCanvas::OpenGLCanvas(QWidget* parent) :
     center_lambda = 0.f;
     center_phi = 0.f;
     fov_scale_relation = "Simple";
-    visualization = "Moebius";
+    visualization = "Zorin-Barr";
     auto_fov_max = false;
     shrink_for_all = false;
     pd = 0.f; // Pannini projection d
@@ -878,7 +878,7 @@ void OpenGLCanvas::paintGL() {
     else if (visualization == "Pannini") vis_mode = 4.25f;
     else if (visualization == "Zorin-Barr") vis_mode = 6.f;
 
-    fprintf(stderr, "center_lambda = %f, center_phi = %f , fov = %f , scales = %f , visualization = %f\n", center_lambda, center_phi,fov,scale, vis_mode);
+    fprintf(stderr, "center_lambda = %f, center_phi = %f , fov = %f ,fov_max = %f , scales = %f , visualization = %f\n", center_lambda, center_phi,fov,fov_max,scale, vis_mode);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0.0, 2.0 / extent, 0.0, 2.0 / scale, 0.0, -2.0 / vis_mode);

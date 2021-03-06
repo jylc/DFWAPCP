@@ -55,14 +55,14 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <IncludePath>H:\Opencv\build\include;$(IncludePath)</IncludePath>
-    <LibraryPath>H:\Opencv\build\x64\vc15\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>H:\Opencv\build\include;G:\lib\libfacedetection\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>H:\Opencv\build\x64\vc15\lib;G:\lib\libfacedetection\build\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
-      <AdditionalDependencies>opengl32.lib;opencv_world440d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;opencv_world440d.lib;facedetection.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -92,7 +92,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="blending.cpp" />
     <ClCompile Include="chronos.cpp" />
+    <ClCompile Include="demo.cpp" />
+    <ClCompile Include="exif.cpp" />
+    <ClCompile Include="face_detect.cpp" />
+    <ClCompile Include="mesh_2d.cpp" />
+    <ClCompile Include="mesh_grid.cpp" />
     <ClCompile Include="openglcanvas.cpp" />
     <QtRcc Include="dfwapcp.qrc" />
     <QtMoc Include="dfwapcp.h" />
@@ -104,8 +110,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="chronos.h" />
+    <ClInclude Include="configure.h" />
+    <ClInclude Include="exif.h" />
+    <ClInclude Include="face_detect.h" />
     <ClInclude Include="files.h" />
     <QtMoc Include="openglcanvas.h" />
+    <ClInclude Include="mesh_2d.h" />
+    <ClInclude Include="mesh_grid.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="x64\Debug\uic\ui_dfwapcp.h" />
   </ItemGroup>

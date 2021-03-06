@@ -24,6 +24,24 @@
     <Filter Include="Resource Files\shader">
       <UniqueIdentifier>{451ac87d-283e-43f6-96ef-1a7041e58124}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\mesh">
+      <UniqueIdentifier>{62c5b81b-826b-4814-8033-f39948c1b04c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\face_detect">
+      <UniqueIdentifier>{b0f045f5-e4ad-4062-b582-bb16488fb0d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\utils">
+      <UniqueIdentifier>{e46a2a3b-721d-49cd-ad18-56bba5416b2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\mesh">
+      <UniqueIdentifier>{fe968d1b-6417-40ed-bd58-12da7f1b0a6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\utils">
+      <UniqueIdentifier>{9e15ec33-666b-4120-bcea-34dd3a21edc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\face_detect">
+      <UniqueIdentifier>{8d02dae0-06a6-45d2-ba1e-c17ad58833a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="dfwapcp.qrc">
@@ -46,6 +64,24 @@
     <ClCompile Include="chronos.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mesh_2d.cpp">
+      <Filter>Source Files\mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh_grid.cpp">
+      <Filter>Source Files\mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="face_detect.cpp">
+      <Filter>Source Files\face_detect</Filter>
+    </ClCompile>
+    <ClCompile Include="exif.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="blending.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="demo.cpp">
+      <Filter>Source Files\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="dfwapcp.ui">
@@ -56,14 +92,29 @@
     <ClInclude Include="x64\Debug\uic\ui_dfwapcp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="chronos.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="mesh_2d.h">
+      <Filter>Header Files\mesh</Filter>
     </ClInclude>
-    <ClInclude Include="files.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="mesh_grid.h">
+      <Filter>Header Files\mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="face_detect.h">
+      <Filter>Header Files\face_detect</Filter>
+    </ClInclude>
+    <ClInclude Include="configure.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="chronos.h">
+      <Filter>Header Files\utils</Filter>
     </ClInclude>
     <ClInclude Include="stb_image.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="files.h">
+      <Filter>Header Files\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="exif.h">
+      <Filter>Header Files\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
