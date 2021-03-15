@@ -29,6 +29,7 @@
 #include "chronos.h"
 #include <QtGui/qopenglfunctions.h>
 #include "effectdrawing.h"
+#include "image_data.h"
 #include <vector>
 #include <string>
 
@@ -40,7 +41,6 @@ public:
     explicit OpenGLCanvas(QWidget *parent = 0);
     static const char* image_types;
 
-
 protected:
     void read_config_file();
     void initializeGL();
@@ -48,9 +48,10 @@ protected:
     void paintGL();
     void define_texture_coordinates(float *texCoord, int m, int n, float min_phi, float max_phi, float min_lambda, float max_lambda);
     void vertex_transformation(float *positions, int m, int n, float center_lambda, float center_phi, float fov_rads, float scale);
-    void load_sphere_mesh(float *positions, int m, int n);
+    void load_sphere_mesh(float *positions, int m, int n,float radio);
     float calculate_extent(float fov_rads);
     void define_triangle_indices(unsigned int * indices, int m, int n);
+    void setup_mesh();
 
 private:
     int compute_auto_fov_max(int);
@@ -125,7 +126,10 @@ private:
     char* input_image_file;
     char* input_image_dir;
     std::vector<std::string> img_info;
-
+    //ImageData img_data;
+    std::shared_ptr<ImageData> img_data_ptr;
+    float focal_length;
+    float d;
 
     // input image size
     int image_size_x;

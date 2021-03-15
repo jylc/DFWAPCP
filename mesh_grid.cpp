@@ -253,7 +253,6 @@ const std::vector<int>& MeshGrid::getBoundaryVertexIndices()const
 	return m_boundary_vertex_indices;
 }
 
-
 const std::vector<int>& MeshGrid::getBoundaryEdgeIndices()const
 {
 	if (m_boundary_edge_indices.empty())

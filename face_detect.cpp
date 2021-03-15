@@ -35,12 +35,12 @@ std::vector<short*> FaceDetect::Detect()
 	std::cout << (m_pResults ? *m_pResults : 0) << " faces detected." << std::endl;
 
 	m_resultImage = m_image.clone();
-	/*
+	
 	for (int i = 0; i < (m_pResults ? *m_pResults : 0); i++)
 	{
 		short* p = ((short*)(m_pResults + 1)) + 142 * i;//每一个检测框的内容
 		m_detectResults.push_back(p);
-		int confidence = p[0];
+		/*int confidence = p[0];
 		int x = p[1];
 		int y = p[2];
 		int w = p[3];
@@ -67,8 +67,8 @@ std::vector<short*> FaceDetect::Detect()
 		printf("face %d: confidence=%d, [%d, %d, %d, %d] (%d,%d) (%d,%d) (%d,%d) (%d,%d) (%d,%d)\n",
 			i, confidence, x, y, w, h,
 			p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14]);//五个点坐标
+			*/
 	}
-	*/
 
 	//imshow("face detection", m_resultImage);
 	//waitKey();

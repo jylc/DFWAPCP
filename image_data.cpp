@@ -63,6 +63,8 @@ m_focal_length(_focal_length)
 	m_mesh_2d = std::make_unique<MeshGrid>(m_img.cols, m_img.rows);
 }
 
+ImageData::ImageData(){}
+
 const cv::Mat& ImageData::getGreyImage()const
 {
 	if(m_grey_img.empty())
@@ -124,7 +126,6 @@ const cv::Mat ImageData::getIntersectedImg()const
 	cv::Mat clone_mask = getMaskImg();
 	for (auto it = rectangle_infos.cbegin(); it != rectangle_infos.cend(); ++it)
 	{
-		//int confidence = int(it[0]);
 		int confidence = (*it)[0];
 		int x = (*it)[1];
 		int y = (*it)[2];
@@ -258,4 +259,15 @@ const std::vector<bool> ImageData::faceMaskWeight()
 	}
 	std::cout << "face detected region size " << face_region.size() << std::endl;
 	return weight;
+}
+
+const std::vector<int> ImageData::getCountOfWAndH()
+{
+	if (m_mesh_2d == nullptr)
+	{
+		fprintf(stderr, "[ImageData getCountOfWAndH]: m_mesh_2d is null\n");
+		exit(-1);
+	}
+	std::vector<int> list = { m_mesh_2d->nw,m_mesh_2d->nh };
+	return list;
 }

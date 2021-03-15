@@ -5,13 +5,14 @@
 #include <string>
 #include "ui_effectdrawing.h"
 #include "image_data.h"
+#include <qimage.h>
 
 class effectdrawing : public QWidget
 {
 	Q_OBJECT
 
 public:
-	effectdrawing(std::vector<std::string>& _img_info, QWidget *parent = Q_NULLPTR);
+	effectdrawing(std::shared_ptr<ImageData>& _img_data_ptr, QWidget* parent = Q_NULLPTR);
 	~effectdrawing();
 
 private:
@@ -23,9 +24,6 @@ private:
 	Ui::effectdrawing ui;
 
 private:
-	std::vector<std::string>& img_info;
-	std::string& img_dir, & img_name, & mask_dir, & mask_name;
-	double focal_length;
-
-	ImageData img_data_ptr;			//图像信息
+	//ImageData& img_data;			//图像信息
+	std::shared_ptr<ImageData>& img_data_ptr;
 };

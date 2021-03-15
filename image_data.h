@@ -25,13 +25,23 @@ public:
 	std::vector<cv::Rect2i> m_face_region;
 	
 	const std::string m_file_dir,m_file_name,m_mask_file_dir,m_mask_file_name;
-	ImageData::ImageData(
+	ImageData(
 		const std::string& _file_dir,
 		const std::string& _file_name,
 		const std::string& _mask_file_dir,
 		const std::string& _mask_file_name,
 		const double _focal_length);
-	
+
+	ImageData();
+
+	ImageData& operator=(const ImageData& data)
+	{
+		ImageData tmp(data.m_file_dir, data.m_file_name,
+			data.m_mask_file_dir, data.m_mask_file_name,
+			data.m_focal_length);
+		return tmp;
+	}
+
 	const cv::Mat& getGreyImage()const;
 	const cv::Mat& getSrcImage()const;
 	const cv::Mat& getMaskImg()const;
@@ -44,8 +54,8 @@ public:
 	void clear();
 	const std::vector<cv::Rect2i> faceDetected();
 	const std::vector<bool> faceMaskWeight();
+	const std::vector<int> getCountOfWAndH();
 
-private:
 private:
 	mutable std::vector<LineData> m_img_lines;
 	mutable double m_focal_length;

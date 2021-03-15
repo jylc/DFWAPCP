@@ -53,7 +53,10 @@
 // test with other hardware.
 
 //传递参数
-//#define PD_ATTR 13
+//焦距
+#define FL_ATTR 11 
+//d=min(W,H)
+#define DT_ATTR 12
 #define PD_ATTR 13
 #define ZBL_ATTR 14
 #define ZBR_ATTR 15
@@ -78,6 +81,8 @@ OpenGLCanvas::OpenGLCanvas(QWidget* parent) :
     pd = 0.f; // Pannini projection d
     zblambda = .1f; // Zorin-Barr transformation lambda
     zbR = 1.f; // Zorin-Barr transformation R
+    //TODO: 待改
+    focal_length = 1.f;    //自定焦距
 
     time_frames = 0;
     time_timer.setInterval(0);
@@ -151,13 +156,6 @@ void OpenGLCanvas::change_zb_R(int new_zb_R) {
     glVertexAttrib1f(ZBR_ATTR, zbR);
     updateGL();
 }
-
-//void OpenGLCanvas::change_scale(double s){
-
-//    if (scale!=s && s>=0.0 && s<=1.0) scale = s;
-//    updateGL();
-
-//}
 
 void OpenGLCanvas::change_center_lambda(double lambda) {
 
@@ -303,6 +301,7 @@ void OpenGLCanvas::load_image(std::string new_image) {
 
     unsigned char* data = 
         stbi_load(new_image.c_str(), &width, &height, &nChannels,0);
+    d = 1.0f * MIN(width, height);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     GLuint tex;
@@ -319,11 +318,28 @@ void OpenGLCanvas::load_image(std::string new_image) {
         GL_RGB,
         GL_UNSIGNED_BYTE,
         data);
+
+    //分割图片路径
+    size_t len = new_image.rfind('/');
+    strcpy(input_image_file, new_image.c_str() + len + 1);
+    img_info.clear();
+    img_info.push_back(input_image_dir);
+    img_info.push_back(input_image_file);
+    std::string tmp(input_image_file);
+    size_t pos = tmp.find_first_of('.');
+    input_image_file[pos] = '\0';
+    char* s = strcat(input_image_file, ".png");
+    img_info.push_back("G:/VSProject/DFWAPCP/data/masks/");
+    img_info.push_back(s);
+
+    img_data_ptr = std::make_shared<ImageData>(img_info[0], img_info[1], img_info[2], img_info[3], focal_length);
+    fprintf(stderr, "input_image_file : %s\n", input_image_file);
+    
 }
 
 void OpenGLCanvas::change_input_image() {
-    const char* fname = QFileDialog::getOpenFileName(this, tr("Choose Panorama File"), input_image_dir, OpenGLCanvas::image_types).toStdString().c_str();
-    if (strlen(fname) > 0) {
+    std::string fname = QFileDialog::getOpenFileName(this, tr("Choose Panorama File"), input_image_dir, OpenGLCanvas::image_types).toStdString();
+    if (fname.length()>0) {
         load_image(fname);
         updateGL();
     }
@@ -358,20 +374,14 @@ void OpenGLCanvas::initializeGL() {
     else {
     load_image(input_image_file);
    }
-    img_info.push_back(input_image_dir);
-    img_info.push_back(input_image_file);
-    std::string tmp(input_image_file);
-    size_t pos = tmp.find_first_of('.');
-    input_image_file[pos] = '\0';
-    char* s = strcat(input_image_file, ".png");
-    img_info.push_back("G:/VSProject/DFWAPCP/data/masks/");
-    img_info.push_back(s);
-    fprintf(stderr, "input_image_file : %s", input_image_file);
-    free(input_image_file);
 
     // mesh resolution
     int m, n;
-    m = n = 100;
+    //m = 100;
+    //n = 100;
+    auto count = img_data_ptr->getCountOfWAndH();
+    n = count[0];//宽
+    m = count[1];//高
 
     //defining texture coordinates
     int meshNumTexCoord = m * n;
@@ -389,7 +399,8 @@ void OpenGLCanvas::initializeGL() {
     }
     //float fov_rads = (fov / 360.f) * CONST_PI_F;
     //vertex_transformation(positions, m, n, center_lambda, center_phi, fov_rads, scale); //passar pelo vertex shader
-    load_sphere_mesh(positions, m, n); //colocar essa e funcoes para textura e triangulos no initializeGL
+    float radio = (1.f * height) / (1.f * width);
+    load_sphere_mesh(positions, m, n, radio); //colocar essa e funcoes para textura e triangulos no initializeGL
 
     //defining triagle indices
     unsigned int meshNumFaces = 2 * (m - 1) * (n - 1);
@@ -406,19 +417,14 @@ void OpenGLCanvas::initializeGL() {
     setShaders();
 }
 
-void OpenGLCanvas::define_texture_coordinates(float* texCoord, int m, int n, float min_phi, float max_phi, float min_lambda, float max_lambda) {
 
-    float delta_lambda = (max_lambda - min_lambda) / (1.0 * (n - 1));
-    float delta_phi = (max_phi - min_phi) / (1.0 * (m - 1));
+void OpenGLCanvas::define_texture_coordinates(float* texCoord,int m, int n, float min_phi, float max_phi, float min_lambda, float max_lambda) {
     float delta_x = 1.0f / (1.0 * (n - 1));
     float delta_y = 1.0f / (1.0 * (m - 1));
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
-           /* texCoord[2 * (j + i * n)] = (min_lambda + delta_lambda * j) / (2 * CONST_PI_F) + 0.5;
-            texCoord[2 * (j + i * n) + 1] = (min_phi + delta_phi * i) / (CONST_PI_F)+0.5;*/
             texCoord[2 * (j + i * n)] = delta_x * j;
             texCoord[2 * (j + i * n) + 1] = delta_y * i;
-            /*fprintf(stderr, "x = %f, y = %f\n", texCoord[2 * (j + i * n)], texCoord[2 * (j + i * n) + 1]);*/
         }
     }
 }
@@ -565,39 +571,31 @@ void OpenGLCanvas::vertex_transformation(float* positions, int m, int n, float c
     }
 }
 
-void OpenGLCanvas::load_sphere_mesh(float* positions, int m, int n) {
-
-    /*float min_lambda = -CONST_PI_F;
-    float max_lambda = CONST_PI_F;
-    float min_phi = -CONST_PI_2_F;
-    float max_phi = CONST_PI_2_F;*/
+void OpenGLCanvas::load_sphere_mesh(float* positions, int m, int n,float radio) {
 
     float delta_x = 2.0f / (1.0 * (n - 1));
-    float delta_y = 2.0f / (1.0 * (m - 1));
-
-    /*float delta_lambda = (max_lambda - min_lambda) / (1.0 * (n - 1));
-    float delta_phi = (max_phi - min_phi) / (1.0 * (m - 1));*/
+    float delta_y = 2.0f / (1.0 * (m - 1)); 
 
     float lambda, phi, x, y, z;
 
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
-
-            /*lambda = (min_lambda + delta_lambda * j);
-            phi = (min_phi + delta_phi * i);*/
-
-            // OpenGL: x is the vertical axes pointg downwards, and y is horizontal axes
-            /*y = sinf(phi);
-            x = -sinf(lambda) * cosf(phi);
-            z = -cosf(lambda) * cosf(phi);*/
-           
-            /*positions[3 * (j + i * n)] = x;
-            positions[3 * (j + i * n) + 1] = y;
-            positions[3 * (j + i * n) + 2] = z;*/
-            //fprintf(stderr, "x = %f, y = %f,z = %f\n", x, y, z);
-            positions[3 * (j + i * n)] = delta_x * j - 1.0f;
-            positions[3 * (j + i * n) + 1] = delta_y * i - 1.0f;
-            positions[3 * (j + i * n) + 2] = -1;
+    fprintf(stderr, "\nradio = %lf\n", radio);
+    if (radio < 1) {
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                positions[3 * (j + i * n)] = delta_x * j - 1.0f;
+                positions[3 * (j + i * n) + 1] = (delta_y * i - 1.0f) * radio;
+                positions[3 * (j + i * n) + 2] = -1;
+            }
+        }
+    }
+    else {
+        radio = 1 / radio;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                positions[3 * (j + i * n)] = (delta_x * j - 1.0f) * radio;
+                positions[3 * (j + i * n) + 1] = delta_y * i - 1.0f;
+                positions[3 * (j + i * n) + 2] = -1;
+            }
         }
     }
 
@@ -717,7 +715,6 @@ void OpenGLCanvas::compute_scale() {
     }
 }
 
-
 void OpenGLCanvas::resizeGL(int w, int h) {
     if (w > h)
         glViewport(0, (h - w) / 2, w, w);
@@ -777,7 +774,6 @@ void OpenGLCanvas::setShaders() {
         strcat(fs_file, "/shaders/");
     }
     else {
-        ;
         strcpy(vs_file, shader_dir);
         strcat(vs_file, "/");
         strcpy(fs_file, shader_dir);
@@ -813,16 +809,21 @@ void OpenGLCanvas::setShaders() {
     GLuint p = glCreateProgram();
 
     // Bind attributes pd, zblambda and zbR to the vertex shader.
+    glVertexAttrib1f(DT_ATTR, d);
+    glBindAttribLocation(p, DT_ATTR, "d");
+    glVertexAttrib1f(FL_ATTR, focal_length);
+    glBindAttribLocation(p, FL_ATTR, "focal_length");
+
     glVertexAttrib1f(PD_ATTR, pd);
     glBindAttribLocation(p, PD_ATTR, "pd");
     glVertexAttrib1f(ZBL_ATTR, zblambda);
     glBindAttribLocation(p, ZBL_ATTR, "zblambda");
     glVertexAttrib1f(ZBR_ATTR, zbR);
     glBindAttribLocation(p, ZBR_ATTR, "zbR");
-  
+
     glAttachShader(p, v);
     glAttachShader(p, f);
-
+    
     glLinkProgram(p);
     glUseProgram(p);
 }
@@ -861,11 +862,8 @@ void OpenGLCanvas::wheelEvent(QWheelEvent* event) {
 void OpenGLCanvas::paintGL() {
 
     float fov_rads = (fov / 360.f) * CONST_PI_F;
-
-    //    // changing scale to generate the figures for the paper (remove it after)
-    //    scale = 0.8;
-
-        // defining transformation parameters (that will be passed to the vertex shader)
+  
+    // defining transformation parameters (that will be passed to the vertex shader)
     float extent = calculate_extent(fov_rads);
     float vis_mode = .0f;
     if (visualization == "Moebius" || visualization == "Perspective") vis_mode = 1.f;
@@ -916,7 +914,7 @@ void OpenGLCanvas::paintGL() {
 
 void OpenGLCanvas::show_effected_imgs()
 {
-    effectdrawing* drawing = new effectdrawing(img_info);
+    effectdrawing* drawing= new effectdrawing(img_data_ptr);
     drawing->show();
 }
 

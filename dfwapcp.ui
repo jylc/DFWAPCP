@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1278</width>
-    <height>722</height>
+    <width>1291</width>
+    <height>807</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,8 +20,8 @@
   <widget class="OpenGLCanvas" name="GLCanvas" native="true">
    <property name="geometry">
     <rect>
-     <x>9</x>
-     <y>9</y>
+     <x>10</x>
+     <y>30</y>
      <width>1111</width>
      <height>673</height>
     </rect>
@@ -45,7 +45,7 @@
      <x>1126</x>
      <y>9</y>
      <width>150</width>
-     <height>671</height>
+     <height>771</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="mainLayout">
@@ -157,6 +157,91 @@
      </layout>
     </item>
     <item>
+     <layout class="QGridLayout" name="extControlsLayout">
+      <item row="0" column="0">
+       <widget class="QSlider" name="changezblambda">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="pageStep">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_lambda">
+        <property name="text">
+         <string>λ</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QSlider" name="changezbR">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="pageStep">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>100</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_R">
+        <property name="text">
+         <string>R</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QSlider" name="changepd">
+        <property name="maximum">
+         <number>400</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="label_d">
+        <property name="text">
+         <string>d</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
      <layout class="QVBoxLayout" name="optionsLayout">
       <item>
        <widget class="QCheckBox" name="shrinkAll">
@@ -185,6 +270,59 @@
     </item>
     <item>
      <layout class="QGridLayout" name="slidersLayout">
+      <item row="2" column="0">
+       <widget class="QSlider" name="changefovmax">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>29</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>359</number>
+        </property>
+        <property name="sliderPosition">
+         <number>60</number>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::NoTicks</enum>
+        </property>
+        <property name="tickInterval">
+         <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>70</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>FOV max</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1">
        <widget class="QLabel" name="label_6">
         <property name="sizePolicy">
@@ -223,78 +361,6 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>70</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>FOV max</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLCDNumber" name="fovled">
-        <property name="minimumSize">
-         <size>
-          <width>46</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
-        </property>
-        <property name="digitCount">
-         <number>3</number>
-        </property>
-        <property name="segmentStyle">
-         <enum>QLCDNumber::Flat</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QSlider" name="changefovmax">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>29</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>359</number>
-        </property>
-        <property name="sliderPosition">
-         <number>60</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::NoTicks</enum>
-        </property>
-        <property name="tickInterval">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
       <item row="2" column="1">
        <widget class="QSlider" name="changefov">
         <property name="sizePolicy">
@@ -320,6 +386,25 @@
         </property>
         <property name="orientation">
          <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLCDNumber" name="fovled">
+        <property name="minimumSize">
+         <size>
+          <width>46</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="digitCount">
+         <number>3</number>
+        </property>
+        <property name="segmentStyle">
+         <enum>QLCDNumber::Flat</enum>
         </property>
        </widget>
       </item>
@@ -644,6 +729,54 @@
     <hint type="destinationlabel">
      <x>564</x>
      <y>345</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>changezblambda</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>change_zb_lambda(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1191</x>
+     <y>111</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>605</x>
+     <y>326</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>changezbR</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>change_zb_R(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1191</x>
+     <y>139</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>605</x>
+     <y>326</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>changepd</sender>
+   <signal>sliderMoved(int)</signal>
+   <receiver>GLCanvas</receiver>
+   <slot>change_p_d(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1191</x>
+     <y>167</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>605</x>
+     <y>326</y>
     </hint>
    </hints>
   </connection>

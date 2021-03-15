@@ -50,12 +50,10 @@ void main(void){
     float zbalpha=atan(v,u);
     float zbr=sqrt(u*u+v*v);
     float zbrho=(zblambda*zbr/zbR)+(1.0-zblambda)*(zbR*(sqrt(zbr*zbr+1.0)-1.0))/(zbr*(sqrt(zbR*zbR+1.0)-1.0));
-    //
-    //float r0= d/(2.0*tan(0.5*atan(d,(2.0f*focal_length))));
-    //float rp=zbr;
-    //float ru = r0*tan(0.5*atan(rp,focal_lenght));
-    u=zbrho*cos(zbalpha);
-    v=zbrho*sin(zbalpha);
+   
+    float ru=zbR*(tan(atan(zbr)/(2.f-zblambda))/tan(atan(zbR)/(2.f-zblambda)));
+    u=ru*cos(zbalpha);
+    v=ru*sin(zbalpha);
     //u=zbrho;
     //v=zbrho;
     gl_Position = vec4(u/extent,-v/extent,z,1.0);
