@@ -51,8 +51,7 @@ protected:
     void load_sphere_mesh(float *positions, int m, int n,float radio);
     float calculate_extent(float fov_rads);
     void define_triangle_indices(unsigned int * indices, int m, int n);
-    void setup_mesh();
-
+    void load_rendered_img();
 private:
     int compute_auto_fov_max(int);
     void compute_scale();

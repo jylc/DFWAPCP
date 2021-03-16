@@ -271,3 +271,15 @@ const std::vector<int> ImageData::getCountOfWAndH()
 	std::vector<int> list = { m_mesh_2d->nw,m_mesh_2d->nh };
 	return list;
 }
+
+
+
+void ImageData::setStereoImgFromGL(cv::Mat stereo_img)
+{
+	m_stereo_img = stereo_img;
+}
+
+cv::Mat ImageData::getStereoImgFromGL()
+{
+	return m_stereo_img;
+}

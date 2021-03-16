@@ -55,10 +55,13 @@ public:
 	const std::vector<cv::Rect2i> faceDetected();
 	const std::vector<bool> faceMaskWeight();
 	const std::vector<int> getCountOfWAndH();
+	void setStereoImgFromGL(cv::Mat stereo_img);
+	cv::Mat getStereoImgFromGL();
 
 private:
 	mutable std::vector<LineData> m_img_lines;
 	mutable double m_focal_length;
+	mutable cv::Mat m_stereo_img;
 };
 
 #endif // !IMAGE_DATA

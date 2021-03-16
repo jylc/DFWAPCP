@@ -18,19 +18,22 @@ effectdrawing::effectdrawing(
 	else
 	{
 		//封装为函数执行会导致界面不能更新
-		cv::Mat tmp1,tmp2;
+		cv::Mat tmp1, tmp2;
 		cv::cvtColor(src_img, tmp1, cv::COLOR_BGR2RGB);
 		QImage img1 = QImage((const unsigned char*)tmp1.data, tmp1.cols, tmp1.rows, tmp1.cols * tmp1.channels(), QImage::Format_RGB888);
 
 		cv::cvtColor(effected_img, tmp2, cv::COLOR_BGR2RGB);
 		QImage img2 = QImage((const unsigned char*)tmp2.data, tmp2.cols, tmp2.rows, tmp2.cols * tmp2.channels(), QImage::Format_RGB888);
 
+		
 
 		ui.srcimg->setPixmap(QPixmap::fromImage(img1));
 		ui.srcimg->adjustSize();
 
 		ui.effectedimg->setPixmap(QPixmap::fromImage(img2));
 		ui.effectedimg->adjustSize();
+
+		
 	}
 }
 

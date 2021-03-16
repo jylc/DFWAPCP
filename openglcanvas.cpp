@@ -54,10 +54,7 @@
 
 //传递参数
 //焦距
-#define FL_ATTR 11 
-//d=min(W,H)
-#define DT_ATTR 12
-#define PD_ATTR 13
+#define FL_ATTR  13 
 #define ZBL_ATTR 14
 #define ZBR_ATTR 15
 
@@ -130,8 +127,10 @@ void OpenGLCanvas::change_fov(int new_fov) {
 void OpenGLCanvas::change_fov_max(int new_fov_max) {
     if (new_fov_max <= 360.f && new_fov_max >= 1)
         fov_max = (double)new_fov_max;
+    focal_length = fov_max/10.f;
+    glVertexAttrib1f(FL_ATTR, focal_length);
     compute_scale();
-    fprintf(stderr, "change fov_max, fov=%f, fov_max=%f, new scale=%f\n", fov, fov_max, scale);
+    fprintf(stderr, "change fov_max, fov=%f, fov_max=%f, new scale=%f, focal_length = %f\n", fov, fov_max, scale,focal_length);
     emit max_fov_changed((int)fov_max);
     updateGL();
 }
@@ -139,7 +138,7 @@ void OpenGLCanvas::change_fov_max(int new_fov_max) {
 void OpenGLCanvas::change_p_d(int new_p_d) {
     pd = (float)new_p_d / 10;
     fprintf(stderr, "p_d=%f\n", pd);
-    glVertexAttrib1f(PD_ATTR, pd);
+    //glVertexAttrib1f(PD_ATTR, pd);
     updateGL();
 }
 
@@ -377,11 +376,9 @@ void OpenGLCanvas::initializeGL() {
 
     // mesh resolution
     int m, n;
-    //m = 100;
-    //n = 100;
-    auto count = img_data_ptr->getCountOfWAndH();
-    n = count[0];//宽
-    m = count[1];//高
+    m = 100;
+    n = 100;
+  
 
     //defining texture coordinates
     int meshNumTexCoord = m * n;
@@ -809,13 +806,13 @@ void OpenGLCanvas::setShaders() {
     GLuint p = glCreateProgram();
 
     // Bind attributes pd, zblambda and zbR to the vertex shader.
-    glVertexAttrib1f(DT_ATTR, d);
-    glBindAttribLocation(p, DT_ATTR, "d");
+    //glVertexAttrib1f(DT_ATTR, d);
+    //glBindAttribLocation(p, DT_ATTR, "d");
     glVertexAttrib1f(FL_ATTR, focal_length);
     glBindAttribLocation(p, FL_ATTR, "focal_length");
 
-    glVertexAttrib1f(PD_ATTR, pd);
-    glBindAttribLocation(p, PD_ATTR, "pd");
+    //glVertexAttrib1f(PD_ATTR, pd);
+    //glBindAttribLocation(p, PD_ATTR, "pd");
     glVertexAttrib1f(ZBL_ATTR, zblambda);
     glBindAttribLocation(p, ZBL_ATTR, "zblambda");
     glVertexAttrib1f(ZBR_ATTR, zbR);
@@ -862,7 +859,8 @@ void OpenGLCanvas::wheelEvent(QWheelEvent* event) {
 void OpenGLCanvas::paintGL() {
 
     float fov_rads = (fov / 360.f) * CONST_PI_F;
-  
+    float radio = (1.f * height) / (1.f * width);
+    load_sphere_mesh(verticesPositions, 100, 100, radio);
     // defining transformation parameters (that will be passed to the vertex shader)
     float extent = calculate_extent(fov_rads);
     float vis_mode = .0f;
@@ -914,7 +912,39 @@ void OpenGLCanvas::paintGL() {
 
 void OpenGLCanvas::show_effected_imgs()
 {
+    load_rendered_img();
     effectdrawing* drawing= new effectdrawing(img_data_ptr);
     drawing->show();
 }
 
+void OpenGLCanvas::load_rendered_img()
+{
+    GLubyte* pPixelData;
+    pPixelData = (GLubyte*)malloc(width * height * 4);
+    if (pPixelData == 0)
+        exit(-1);
+    glReadBuffer(GL_FRONT);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pPixelData);
+
+    cv::Mat img;
+    std::vector<cv::Mat> imgPlanes;
+    img.create(height, width, CV_8UC3);
+    cv::split(img, imgPlanes);
+
+    for (int i = 0; i < height; i++) {
+        unsigned char* plane0Ptr = imgPlanes[0].ptr<unsigned char>(i);
+        unsigned char* plane1Ptr = imgPlanes[1].ptr<unsigned char>(i);
+        unsigned char* plane2Ptr = imgPlanes[2].ptr<unsigned char>(i);
+        for (int j = 0; j < width; j++) {
+            int k = 4 * (i * width + j);
+            plane2Ptr[j] = pPixelData[k];
+            plane1Ptr[j] = pPixelData[k + 1];
+            plane0Ptr[j] = pPixelData[k + 2];
+        }
+    }
+    cv::merge(imgPlanes, img);
+    cv::flip(img, img, 0);
+    cv::cvtColor(img, img, cv::COLOR_RGB2GRAY);
+    cv::imwrite("G:/VSProject/DFWAPCP/data/test.jpg", img);
+}

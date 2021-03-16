@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1070</width>
+    <width>1675</width>
     <height>761</height>
    </rect>
   </property>
@@ -31,6 +31,19 @@
     <rect>
      <x>610</x>
      <y>10</y>
+     <width>421</width>
+     <height>621</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="stereoimg">
+   <property name="geometry">
+    <rect>
+     <x>1140</x>
+     <y>20</y>
      <width>421</width>
      <height>621</height>
     </rect>

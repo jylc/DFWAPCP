@@ -25,7 +25,7 @@ float u, v, x, y, z;
 varying float r, theta, s;
 float lambda, phi;
 float extent, scale, vis_mode, center_lambda, center_phi,d;
-attribute float zblambda,zbR,pd;
+attribute float zblambda,zbR,focal_length;
 
 void main(void){
 
@@ -51,7 +51,7 @@ void main(void){
     float zbr=sqrt(u*u+v*v);
     float zbrho=(zblambda*zbr/zbR)+(1.0-zblambda)*(zbR*(sqrt(zbr*zbr+1.0)-1.0))/(zbr*(sqrt(zbR*zbR+1.0)-1.0));
    
-    float ru=zbR*(tan(atan(zbr)/(2.f-zblambda))/tan(atan(zbR)/(2.f-zblambda)));
+    float ru=zbR*(tan(atan(zbr,focal_length)/(2.f-zblambda))/tan(atan(zbR,focal_length)/(2.f-zblambda)));
     u=ru*cos(zbalpha);
     v=ru*sin(zbalpha);
     //u=zbrho;
