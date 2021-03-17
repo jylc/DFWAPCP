@@ -1,7 +1,7 @@
 #include "image_data.h"
 #include <opencv2/imgproc/types_c.h>
 #include "face_detect.h"
-#include "project_function.h"
+#include "projection.h"
 LineData::LineData(const Point2& _a, const Point2& _b,
 	const double _width, const double  _length):
 	m_width(_width),m_length(_length)
@@ -144,48 +144,9 @@ const cv::Mat ImageData::getIntersectedImg()const
 
 cv::Mat ImageData::getStereoImg()
 {
-	cv::Mat src_img = getSrcImage().clone();
-	cv::Mat stereo_img = StereoProjection<int>::cylinder(src_img);
-	/*cv::Point2i center_point(std::round(src_img.cols / 2.0), std::round(src_img.rows / 2.0));
-	for (int y = 0; y < src_img.rows; ++y)
-	{
-		for (int x = 0; x < src_img.cols; ++x)
-		{
-			cv::Point2i p(x, y);
-			cv::Vec3b v = src_img.at<cv::Vec3b>(p);
-
-			cv::Point2i pv = StereoProjection<int>::Calculate(src_img.cols,
-				src_img.rows,
-				m_focal_length,
-				center_point,
-				p);
-			if (pv.x >= 0 && pv.y >= 0 && pv.x < src_img.cols && pv.y < src_img.rows)
-			{
-				stereo_img.at<cv::Vec3b>(pv) = cv::Vec3b(v[0], v[1], v[2]);
-			}
-		}
-	}*/
-	const std::vector<cv::Point2f> src_vertices = m_mesh_2d->getVertices();
-	const std::vector<cv::Point2i> tram_vertices = meshTransform();
-	const std::vector<bool> face_mask = faceMaskWeight();
-	std::vector<cv::Point2i> vertices;
-	for (auto index = 0; index < tram_vertices.size(); ++index)
-	{
-		if (face_mask[index])
-		{
-			vertices.push_back(tram_vertices[index]);
-		}
-		else
-		{
-			vertices.push_back(src_vertices[index]);
-		}	
-	}
-
-	for (auto it = vertices.begin(); it != vertices.end(); ++it)
-	{
-	    cv::circle(src_img, cv::Point((*it).x, (*it).y), 1, cv::Scalar(255, 0, 0), 1);
-	}
-	return stereo_img;
+	//TODO:focal length暂时设置为600.f
+	StereoProjection stereo_projection(m_img);
+	return stereo_projection.stereo_transformation();
 }
 
 //检测面部区域
@@ -221,8 +182,9 @@ const std::vector<cv::Point2i> ImageData::meshTransform()const
 	
 	for (int k = 0; k < vertices.size(); ++k)
 	{
-		tram_vertices.push_back(StereoProjection<int>::cylinder(m_img.cols, m_img.rows,
-			cv::Point2i(round(vertices[k].x), round(vertices[k].y))));
+		//TODO: 网格变换 
+		//tram_vertices.push_back(StereoProjection<int>::cylinder(m_img.cols, m_img.rows,
+			//cv::Point2i(round(vertices[k].x), round(vertices[k].y))));
 	}
 
 	cv::Mat test_img = cv::Mat::zeros(m_img.size(), CV_8UC3);

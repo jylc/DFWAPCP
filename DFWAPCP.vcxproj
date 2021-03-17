@@ -99,9 +99,11 @@
     <ClCompile Include="exif.cpp" />
     <ClCompile Include="face_detect.cpp" />
     <ClCompile Include="image_data.cpp" />
+    <ClCompile Include="imgcanvas.cpp" />
     <ClCompile Include="mesh_2d.cpp" />
     <ClCompile Include="mesh_grid.cpp" />
     <ClCompile Include="openglcanvas.cpp" />
+    <ClCompile Include="projection.cpp" />
     <ClCompile Include="test_img.cpp" />
     <QtRcc Include="dfwapcp.qrc" />
     <QtMoc Include="dfwapcp.h" />
@@ -115,6 +117,8 @@
   <ItemGroup>
     <ClInclude Include="chronos.h" />
     <ClInclude Include="configure.h" />
+    <QtMoc Include="imgcanvas.h" />
+    <ClInclude Include="projection.h" />
     <ClInclude Include="x64\Debug\uic\ui_effectdrawing.h" />
     <QtMoc Include="effectdrawing.h" />
     <ClInclude Include="exif.h" />

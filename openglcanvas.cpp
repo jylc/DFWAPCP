@@ -394,8 +394,8 @@ void OpenGLCanvas::initializeGL() {
     if (positions == NULL) {
         printf("problem allocating memory for positions \n");
     }
-    //float fov_rads = (fov / 360.f) * CONST_PI_F;
-    //vertex_transformation(positions, m, n, center_lambda, center_phi, fov_rads, scale); //passar pelo vertex shader
+    float fov_rads = (fov / 360.f) * CONST_PI_F;
+    vertex_transformation(positions, m, n, center_lambda, center_phi, fov_rads, scale); //passar pelo vertex shader
     float radio = (1.f * height) / (1.f * width);
     load_sphere_mesh(positions, m, n, radio); //colocar essa e funcoes para textura e triangulos no initializeGL
 
@@ -549,6 +549,7 @@ void OpenGLCanvas::vertex_transformation(float* positions, int m, int n, float c
             }
             else if (visualization == "Zorin-Barr") {
                 // perspective
+                z = -1.f;
                 u = x / (-z);
                 v = y / (-z);
                 // apply Z-B transformation to (u,v)

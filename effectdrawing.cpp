@@ -10,7 +10,7 @@ effectdrawing::effectdrawing(
 	ui.setupUi(this);
 	//
 	cv::Mat src_img = img_data_ptr->getSrcImage();
-	cv::Mat effected_img = img_data_ptr->getIntersectedImg();
+	cv::Mat effected_img = img_data_ptr->getStereoImg();
 	if (src_img.empty() || effected_img.empty())
 	{
 		fprintf(stderr, "[Effectdrawing] cannot get source image or effected image");
