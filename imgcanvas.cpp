@@ -7,7 +7,7 @@ imgcanvas::imgcanvas(QWidget* parent)
 	m_nMovePointX = 0;
 	m_nMovePointY = 0;
 	m_Timer.setInterval(0);
-	connect(&m_Timer, SIGNAL(QTimer::timeout()), this, SLOT(msgCountAdd()));
+	connect(&m_Timer, SIGNAL(timeout()), this, SLOT(msgCountAdd()));
 }
 
 void imgcanvas::msgCountAdd()
@@ -20,7 +20,6 @@ void imgcanvas::mousePressEvent(QMouseEvent* ev)
 	{
 		dragPosition = ev->globalPos() - frameGeometry().topLeft();
 		ev->accept();
-
 	}
 }
 void imgcanvas::mouseMoveEvent(QMouseEvent* ev)

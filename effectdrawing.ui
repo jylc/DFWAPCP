@@ -26,7 +26,7 @@
     <string/>
    </property>
   </widget>
-  <widget class="imgcanvas" name="effectedimg">
+  <widget class="imgcanvas" name="middleimg">
    <property name="geometry">
     <rect>
      <x>610</x>

@@ -123,7 +123,7 @@ const cv::Mat ImageData::getIntersectedImg()const
 	rectangle_infos = face.Detect();    //面部框的信息及其中点信息
 	result = face.Processed();
 
-	cv::Mat clone_mask = getMaskImg();
+	cv::Mat clone_mask = m_img.clone();
 	for (auto it = rectangle_infos.cbegin(); it != rectangle_infos.cend(); ++it)
 	{
 		int confidence = (*it)[0];
@@ -139,6 +139,12 @@ const cv::Mat ImageData::getIntersectedImg()const
 		cv::putText(clone_mask, s_score, cv::Point(x, y - 3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
 		rectangle(clone_mask, Rect(x - w / 2, y - h, 2 * w, 2 * h), Scalar(0, 255, 0), 2);
 	}
+
+	StereoProjection stereo_projection(clone_mask);
+	std::vector<Point2> old_vertices = m_mesh_2d->getVertices();
+	std::vector<Point2> new_vertices = stereo_projection.stereoTramsformation(old_vertices);
+	std::vector<bool> weights = faceMaskWeight();
+	drawVerticesOnImg(clone_mask, old_vertices, new_vertices, weights);
 	return clone_mask;
 }
 
@@ -146,11 +152,17 @@ cv::Mat ImageData::getStereoImg()
 {
 	//TODO:focal length暂时设置为600.f
 	StereoProjection stereo_projection(m_img);
-	return stereo_projection.stereo_transformation();
+
+	//绘制点，观察效果
+	cv::Mat stereo_img = stereo_projection.stereoTransformation();
+	std::vector<Point2> old_vertices = m_mesh_2d->getVertices();
+	std::vector<Point2> new_vertices = stereo_projection.stereoTramsformation(old_vertices);
+	drawVerticesOnImg(stereo_img, new_vertices, new_vertices, std::vector<bool>(old_vertices.size(), false));
+	return stereo_img;
 }
 
 //检测面部区域
-const std::vector<cv::Rect2i> ImageData::faceDetected()
+const std::vector<cv::Rect2i> ImageData::faceDetected()const
 {
 	cv::Mat result;
 	std::vector<short*> rectangle_infos;
@@ -196,7 +208,7 @@ const std::vector<cv::Point2i> ImageData::meshTransform()const
 	return tram_vertices;
 }
 
-const std::vector<bool> ImageData::faceMaskWeight()
+const std::vector<bool> ImageData::faceMaskWeight()const
 {
 	const std::vector<Point2> vertices = m_mesh_2d->getVertices();
 	const std::vector<cv::Rect2i> face_region = faceDetected();
@@ -234,14 +246,13 @@ const std::vector<int> ImageData::getCountOfWAndH()
 	return list;
 }
 
-
-
-void ImageData::setStereoImgFromGL(cv::Mat stereo_img)
+const void ImageData::drawVerticesOnImg(cv::Mat& srcImg, std::vector<Point2>& oldVertices, std::vector<Point2>& newVertices, std::vector<bool>& weights)const
 {
-	m_stereo_img = stereo_img;
-}
-
-cv::Mat ImageData::getStereoImgFromGL()
-{
-	return m_stereo_img;
+	for (size_t it = 0; it < oldVertices.size(); ++it)
+	{
+		if (weights[it])
+			cv::circle(srcImg, newVertices[it], 1, cv::Scalar(0, 255, 0));
+		else
+			cv::circle(srcImg, oldVertices[it], 1, cv::Scalar(0, 0, 255));
+	}
 }

@@ -1,6 +1,8 @@
 #pragma once
 #ifndef PROJECTION_H
 #define PROJECTION_H
+#include "configure.h"
+#include <vector>
 #include <opencv2/opencv.hpp>
 class Projection
 {
@@ -33,8 +35,10 @@ public:
 
 
 	//Stereographic projection
-	cv::Mat stereo_transformation();
-
+	cv::Mat stereoTransformation();
+	std::vector<Point2> stereoTramsformation(std::vector<Point2>& vertices)const;
+private:
+	const float calculateExtent()const;
 private:
 	float focal_length;
 	float fov_rads;

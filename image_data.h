@@ -22,7 +22,6 @@ class ImageData
 public:
 	std::unique_ptr<Mesh2D> m_mesh_2d;
 	cv::Mat m_img, m_rgba_img, alpha_mask, m_grey_img, m_mask_img;
-	std::vector<cv::Rect2i> m_face_region;
 	
 	const std::string m_file_dir,m_file_name,m_mask_file_dir,m_mask_file_name;
 	ImageData(
@@ -52,16 +51,16 @@ public:
 	const std::vector<cv::Point2i> meshTransform()const;
 	const void meshInfo()const;
 	void clear();
-	const std::vector<cv::Rect2i> faceDetected();
-	const std::vector<bool> faceMaskWeight();
+	const std::vector<cv::Rect2i> faceDetected()const;
+	const std::vector<bool> faceMaskWeight()const;
 	const std::vector<int> getCountOfWAndH();
-	void setStereoImgFromGL(cv::Mat stereo_img);
-	cv::Mat getStereoImgFromGL();
+	const void drawVerticesOnImg(cv::Mat& srcImg,std::vector<Point2>& oldVertices, std::vector<Point2>& newVertices, std::vector<bool>& weights)const;
 
 private:
 	mutable std::vector<LineData> m_img_lines;
 	mutable double m_focal_length;
 	mutable cv::Mat m_stereo_img;
+	mutable std::vector<cv::Rect2i> m_face_region;
 };
 
 #endif // !IMAGE_DATA

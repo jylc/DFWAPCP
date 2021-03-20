@@ -6,7 +6,7 @@
 
 #define DETECT_BUFFER_SIZE 0x20000
 
-const int GRID_SIZE = 40;
+const int GRID_SIZE = 20;
 const int GRID_VERTEX_SIZE = 4;
 const int DOWN_SAMPLE_IMAGE_SIZE = 800 * 600;
 
