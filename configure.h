@@ -5,6 +5,7 @@
 #include <opencv2/core/types.hpp>
 
 #define DETECT_BUFFER_SIZE 0x20000
+#define MAXFLOAT std::numeric_limits<double>::max()
 
 const int GRID_SIZE = 20;
 const int GRID_VERTEX_SIZE = 4;

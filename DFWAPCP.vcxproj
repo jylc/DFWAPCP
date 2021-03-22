@@ -105,6 +105,7 @@
     <ClCompile Include="openglcanvas.cpp" />
     <ClCompile Include="projection.cpp" />
     <ClCompile Include="test_img.cpp" />
+    <ClCompile Include="transform.cpp" />
     <QtRcc Include="dfwapcp.qrc" />
     <QtMoc Include="dfwapcp.h" />
     <ClCompile Include="dfwapcp.cpp" />
@@ -115,10 +116,12 @@
     <QtUic Include="effectdrawing.ui" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="blending.h" />
     <ClInclude Include="chronos.h" />
     <ClInclude Include="configure.h" />
     <QtMoc Include="imgcanvas.h" />
     <ClInclude Include="projection.h" />
+    <ClInclude Include="transform.h" />
     <ClInclude Include="x64\Debug\uic\ui_effectdrawing.h" />
     <QtMoc Include="effectdrawing.h" />
     <ClInclude Include="exif.h" />

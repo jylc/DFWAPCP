@@ -26,7 +26,7 @@ void imgcanvas::mouseMoveEvent(QMouseEvent* ev)
 {
     if (ev->buttons() & Qt::LeftButton)
     {
-        qDebug() << ev->globalPos() - dragPosition;
+        //qDebug() << ev->globalPos() - dragPosition;
         m_nMovePointX = (ev->globalPos() - dragPosition).x();
         m_nMovePointY = (ev->globalPos() - dragPosition).y();
         if (m_nMovePointX < 0 || m_nMovePointY < 0 || m_nMovePointY > m_pParent->rect().bottom() - this->rect().width() || m_nMovePointX > m_pParent->rect().right() - this->rect().width())

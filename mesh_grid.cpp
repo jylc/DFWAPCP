@@ -66,7 +66,7 @@ const std::vector<Indices>& MeshGrid::getPolygonsIndices()const
 				for (int n = 0; n < GRID_VERTEX_SIZE; ++n)
 				{
 					const cv::Point2i p2 = p1 + nexts[n];
-					m_polygons_indices[index].indices.push_back(p2.x + p2.y * (nw + 1));
+					m_polygons_indices[index].indices.emplace_back(p2.x + p2.y * (nw + 1));
 				}
 				++index;
 			}

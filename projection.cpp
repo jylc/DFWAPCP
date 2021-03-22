@@ -4,6 +4,7 @@ cv::Mat StereoProjection::stereoTransformation() {
 
     float phi, x, y, z, u, v, r;
     float extent = calculateExtent();
+    fprintf(stderr, "extent = %f\n", extent);
 
     float center_x = n / 2;//ÁÐ
     float center_y = m / 2;//ÐÐ
@@ -48,6 +49,7 @@ std::vector<Point2> StereoProjection::stereoTramsformation(std::vector<Point2>& 
     float center_y = m / 2;//ÐÐ
     std::vector<Point2> newVertices;
     newVertices.reserve(vertices.size());
+    
     for (auto& it : vertices)
     {
             x = it.x;
@@ -71,7 +73,11 @@ std::vector<Point2> StereoProjection::stereoTramsformation(std::vector<Point2>& 
             y = center_y - v;
             if (x >= 0 && x < n && y >= 0 && y < m)
             {
-                newVertices.push_back(Point2(x,y));
+                newVertices.push_back(Point2(x, y));
+            }
+            else
+            {
+                newVertices.push_back(Point2(it.x, it.y));
             }
     }
     return newVertices;
