@@ -8,9 +8,9 @@ effectdrawing::effectdrawing(
 	img_data_ptr(_img_data_ptr)
 {
 	ui.setupUi(this);
-	//
-	cv::Mat src_img = img_data_ptr->getIntersectedImg();
-	cv::Mat stereo_img = img_data_ptr->getStereoImg();
+	cv::Mat img = img_data_ptr->getSrcImage();
+	cv::Mat src_img = img_data_ptr->getIntersectedImg(img,0);
+	cv::Mat stereo_img = img_data_ptr->getIntersectedImg(img_data_ptr->getStereoImg(),2);
 	cv::Mat middle_img = img_data_ptr->meshTransform();
 	if (src_img.empty() || stereo_img.empty()||middle_img.empty())
 	{

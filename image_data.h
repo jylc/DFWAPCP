@@ -44,7 +44,7 @@ public:
 	const cv::Mat& getSrcImage()const;
 	const cv::Mat& getMaskImg()const;
 	const cv::Mat& getAlphaMaskImg()const;
-	const cv::Mat getIntersectedImg()const;//面部检测框与模板相交
+	const cv::Mat getIntersectedImg(cv::Mat img, int flag=0)const;//面部检测框与模板相交
 	const cv::Mat getStereoImg()const;//stereo projection后的图像
 	const std::vector<LineData>& getLines()const;
 	const cv::Mat meshTransform()const;
@@ -54,6 +54,7 @@ public:
 	const std::vector<bool> faceMaskWeight()const;
 	const std::vector<int> getCountOfWAndH();
 	const void drawVerticesOnImg(cv::Mat& srcImg,std::vector<Point2>& oldVertices, std::vector<Point2>& newVertices, std::vector<bool>& weights)const;
+	const void drawLinesOnImg(cv::Mat& srcImg, std::vector<Point2>& oldVertices, std::vector<Point2>& newVertices, std::vector<bool>& weights)const;
 	const cv::Mat blendImages()const;
 	const std::vector<cv::Mat> getImages()const;
 	//TODO: 该方法放在此处不太适合，待修改

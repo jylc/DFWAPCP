@@ -35,10 +35,10 @@ int TestImg::test_img()
 
     img_data.meshInfo();
     cv::Mat src_img = img_data.getSrcImage();
-    cv::Mat intersected_img = img_data.getIntersectedImg();
+    //cv::Mat intersected_img = img_data.getIntersectedImg();
     cv::Mat stereo_img = img_data.getStereoImg();
 
-    imshow("intersected img", intersected_img);
+    //imshow("intersected img", intersected_img);
     cv::waitKey();
     img_data.clear();
     return 0;

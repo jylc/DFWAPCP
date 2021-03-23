@@ -11,3 +11,5 @@ std::vector<cv::Rect_<T> > getVerticesRects(const std::vector<std::vector<cv::Po
 
 template <typename T>
 cv::Point_<T> applyTransform2x3(T x, T y, const cv::Mat& matT);
+
+void bilinearIntertpolatioin(cv::Mat& src, cv::Mat& dst, const int rows, const int cols);
