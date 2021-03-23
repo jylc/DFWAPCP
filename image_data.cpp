@@ -118,7 +118,7 @@ const void ImageData::meshInfo()const
 
 }
 
-const cv::Mat ImageData::getIntersectedImg(cv::Mat img,int flag)const
+const cv::Mat ImageData::getIntersectedImg(cv::Mat img, bool flag)const
 {
 	cv::Mat result;
 	std::vector<short*> rectangle_infos;
@@ -142,35 +142,14 @@ const cv::Mat ImageData::getIntersectedImg(cv::Mat img,int flag)const
 		cv::putText(clone_mask, s_score, cv::Point(x, y - 3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
 		rectangle(clone_mask, Rect(x - w / 2, y - h, 2 * w, 2 * h), Scalar(0, 255, 0), 2);
 	}
-	StereoProjection stereo_projection(clone_mask);
-	if (flag==0)
-	{//原图像网格点
-		std::vector<Point2> old_vertices = m_mesh_2d->getVertices();
-		std::vector<Point2> new_vertices = old_vertices;
-		std::vector<bool> weights = faceMaskWeight();
-		drawVerticesOnImg(clone_mask, old_vertices, new_vertices, weights);
-	}
-	else if(flag==1)
-	{//混合点
-		std::vector<Point2> old_vertices = m_mesh_2d->getVertices();
-		std::vector<Point2> new_vertices = stereo_projection.stereoTramsformation(old_vertices);
-		std::vector<bool> weights = faceMaskWeight();
-		drawVerticesOnImg(clone_mask, old_vertices, new_vertices, weights);
-		//drawVerticesOnImg(clone_mask, new_vertices, new_vertices, weights);
-	}
-	else if(flag==2)
-	{
-		std::vector<Point2> old_vertices = m_mesh_2d->getVertices();
-		std::vector<Point2> new_vertices = stereo_projection.stereoTramsformation(old_vertices);
-		std::vector<bool> weights = faceMaskWeight();
-		drawVerticesOnImg(clone_mask, new_vertices, new_vertices, weights);
-	}
+	StereoProjection stereo_projection(m_img);
+	const std::vector<Point2>& old_vertices = m_mesh_2d->getVertices();
+	const std::vector<Point2>& new_vertices = stereo_projection.stereoTramsformation(old_vertices);
+	const std::vector<bool>& face_weights = faceMaskWeight();
+	//默认显示原图网格
 	
+	drawVerticesOnImg(clone_mask, old_vertices, flag ? old_vertices : new_vertices, face_weights);
 	return clone_mask;
-}
-
-const void ImageData::drawLinesOnImg(cv::Mat& srcImg, std::vector<Point2>& oldVertices, std::vector<Point2>& newVertices, std::vector<bool>& weights)const
-{
 }
 
 const cv::Mat ImageData::getStereoImg()const
@@ -178,24 +157,7 @@ const cv::Mat ImageData::getStereoImg()const
 	//TODO:focal length暂时设置为600.f
 	cv::Mat src_img = m_img.clone();
 	StereoProjection stereo_projection(src_img);
-
-	m_stereo_img = stereo_projection.stereoTransformation();
-	cv::Mat stereo_img = m_stereo_img.clone();
-	//绘制点，观察效果
-	/*std::vector<Point2> old_vertices = m_mesh_2d->getVertices();
-	std::vector<Point2> new_vertices = stereo_projection.stereoTramsformation(old_vertices);
-	drawVerticesOnImg(stereo_img, new_vertices, new_vertices, std::vector<bool>(old_vertices.size(), false));*/
-	return stereo_img;
-}
-
-//stereo image的顶点
-const std::vector<Point2> ImageData::getVerticesOfStereoImg()const
-{
-	cv::Mat src_img = m_img.clone();
-	StereoProjection stereo_projection(src_img);
-	std::vector<Point2> old_vertices = m_mesh_2d->getVertices();
-	std::vector<Point2> new_vertices = stereo_projection.stereoTramsformation(old_vertices);
-	return new_vertices;
+	return stereo_projection.stereoTransformation();
 }
 
 //检测面部区域
@@ -226,9 +188,9 @@ const std::vector<cv::Rect2i> ImageData::faceDetected()const
 //网格变换
 const cv::Mat ImageData::meshTransform()const
 {
-	std::vector<Point2> old_vertices = m_mesh_2d->getVertices();
-	std::vector<Indices> polygons_indices = m_mesh_2d->getPolygonsIndices();
-	std::vector<Indices> triangulation_indices = m_mesh_2d->getTriangulationIndices();
+	const std::vector<Point2> &old_vertices = m_mesh_2d->getVertices();
+	const std::vector<Indices> &polygons_indices = m_mesh_2d->getPolygonsIndices();
+	const std::vector<Indices> &triangulation_indices = m_mesh_2d->getTriangulationIndices();
 	std::vector<cv::Mat> affine_transforms;
 	cv::Mat src_img = m_img.clone();
 	StereoProjection stereo_projection(src_img);
@@ -239,19 +201,8 @@ const cv::Mat ImageData::meshTransform()const
 	const int NO_GRID = -1, TRIANGLE_COUNT = 3, PRECISION = 0;
 	cv::Mat polygon_index_mask(src_img.rows + shift.y, src_img.cols + shift.x, CV_32SC1, Scalar::all(NO_GRID));
 	int label = 0;
-
 	std::vector<bool> face_mask_weight = faceMaskWeight();
-	//TODO:只对面部区域形变！！！
-	
-	std::vector<Point2> tmp_vertices;
-	tmp_vertices.reserve(old_vertices.size());
-	for (size_t i = 0; i < old_vertices.size(); ++i)
-	{
-		if (face_mask_weight[i])
-			tmp_vertices.emplace_back(new_vertices[i]);
-		else
-			tmp_vertices.emplace_back(old_vertices[i]);
-	}
+	std::vector<Point2> tmp_vertices = mixedMesh(old_vertices, new_vertices, face_mask_weight);
 
 	for (int i = 0; i < polygons_indices.size(); ++i)//四边形
 	{
@@ -279,9 +230,9 @@ const cv::Mat ImageData::meshTransform()const
 			{
 				tmp_vertices[index_0],
 				tmp_vertices[index_1],
-				tmp_vertices[index_2],
+				tmp_vertices[index_2]
 			};
-			
+
 			affine_transforms.emplace_back(getAffineTransform(src, dst));
 			++label;
 		}
@@ -289,7 +240,6 @@ const cv::Mat ImageData::meshTransform()const
 	
 	float scale = 1;
 	cv::Mat image = cv::Mat::zeros((src_img.rows + shift.y)*scale, (src_img.cols + shift.x)*scale, CV_8UC3);
-
 	for (int y = 0; y < image.rows; ++y)
 	{
 		for (int x = 0; x < image.cols; ++x)
@@ -314,11 +264,25 @@ const cv::Mat ImageData::meshTransform()const
 			}
 		}
 	}
-	cv::Mat clone_image = image.clone();
+	
 
-	//双线性插值
-	//bilinearIntertpolatioin(image, clone_image, image.rows, image.cols);
-	return clone_image;
+	cv::Mat inpaint_mask = cv::Mat::zeros(image.size(), CV_8U);
+	for (size_t y = 0; y < image.rows; y++)
+	{
+		for (size_t x = 0; x < image.cols; x++)
+		{
+			int a = image.at<cv::Vec3b>(y, x)[0];
+			int b = image.at<cv::Vec3b>(y, x)[1];
+			int c = image.at<cv::Vec3b>(y, x)[2];
+
+			if (a==0&&b==0&&c==0)
+			{
+				inpaint_mask.at<uchar>(y, x)=255;
+			}
+		}
+	}
+	inpaint(image, inpaint_mask, image, 3, INPAINT_TELEA);
+	return image;
 }
 
 const std::vector<bool> ImageData::faceMaskWeight()const
@@ -363,50 +327,28 @@ const std::vector<int> ImageData::getCountOfWAndH()
 	return list;
 }
 
-const void ImageData::drawVerticesOnImg(cv::Mat& srcImg, std::vector<Point2>& oldVertices, std::vector<Point2>& newVertices, std::vector<bool>& weights)const
+const void ImageData::drawVerticesOnImg(cv::Mat& src_img,const std::vector<Point2>& old_vertices, const std::vector<Point2>& new_vertices,const std::vector<bool>& weights)const
 {
-	for (size_t it = 0; it < oldVertices.size(); ++it)
+	auto& vertices = mixedMesh(old_vertices, new_vertices, weights);
+	int i = 0;
+	for (auto& vertice : vertices)
 	{
-		if (weights[it])
-			cv::circle(srcImg, newVertices[it], 1, cv::Scalar(0, 255, 0));
-		else
-			cv::circle(srcImg, oldVertices[it], 1, cv::Scalar(0, 0, 255));
+		cv::circle(src_img, vertice, 1, weights[i++] ? cv::Scalar(0, 255, 0) : cv::Scalar(0, 0, 255));
 	}
 }
 
-//网格形变获得形变的顶点之后使用仿射变换应用在每个点上？
-const cv::Mat ImageData::blendImages()const
-{
-	std::vector<cv::Mat> weight_mask, new_weight_mask;
-	std::vector<Point2> origins;
-	std::vector<cv::Mat> images = getImages();
-	weight_mask = getMatsLinearBlendWeight(images);
-	std::vector<std::vector<Point2>> all_vertices(images.size());
-	for (auto i = 0; i != images.size(); ++i)
-	{
-		if (0 == i)
-			all_vertices.push_back(m_mesh_2d->getVertices());
-		else
-			all_vertices.push_back(getVerticesOfStereoImg());
-	}
 
-	//std::vector<Rect_<float>> rects = getVerticesRects<float>(all_vertices);
-	return cv::Mat();
-}
-
-const std::vector<cv::Mat> ImageData::getImages()const
+const std::vector<Point2> ImageData::mixedMesh(
+	const std::vector<Point2>& old_vertices, 
+	const std::vector<Point2>& new_vertices, 
+	const std::vector<bool>& weight)const
 {
-	getStereoImg();
-	if (m_img.empty()&&m_stereo_img.empty())
+	std::vector<Point2> mixed_mesh_vertices;
+	mixed_mesh_vertices.reserve(old_vertices.size());
+
+	for (size_t i = 0; i < old_vertices.size(); i++)
 	{
-		fprintf(stderr, "[ImageData_getImages] Cannot load source image or stereo image\n");
-		exit(-1);
+		mixed_mesh_vertices.emplace_back(weight[i]? new_vertices[i] : old_vertices[i]);
 	}
-	if (m_images.empty())
-	{
-		m_images.reserve(2);
-		m_images.emplace_back(m_img);
-		m_images.emplace_back(m_stereo_img);
-	}
-	return m_images;
+	return mixed_mesh_vertices;
 }

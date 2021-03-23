@@ -7,7 +7,7 @@
 class Projection
 {
 public:
-	Projection(cv::Mat& _src_img)
+	Projection(const cv::Mat& _src_img)
 		:src_img(_src_img) 
 	{ 
 		height = src_img.rows;
@@ -16,7 +16,7 @@ public:
 	virtual ~Projection() {};
 
 protected:
-	cv::Mat& src_img;
+	const cv::Mat& src_img;
 	int height;
 	int width;
 };
@@ -24,7 +24,7 @@ protected:
 class StereoProjection :protected Projection
 {
 public:
-	StereoProjection(cv::Mat& _src_img,float _focal_length=600.f) :Projection(_src_img)
+	StereoProjection(const cv::Mat& _src_img,float _focal_length=600.f) :Projection(_src_img)
 	{
 		focal_length = _focal_length;
 		n = width;
@@ -35,8 +35,8 @@ public:
 
 
 	//Stereographic projection
-	cv::Mat stereoTransformation();
-	std::vector<Point2> stereoTramsformation(std::vector<Point2>& vertices)const;
+	const cv::Mat stereoTransformation()const;
+	const std::vector<Point2> stereoTramsformation(const std::vector<Point2>& vertices)const;
 private:
 	const float calculateExtent()const;
 private:

@@ -42,6 +42,7 @@ cv::Point_<T> applyTransform2x3(T x, T y, const cv::Mat& matT) {
         (matT.at<double>(1, 0) * x + matT.at<double>(1, 1) * y + matT.at<double>(1, 2)));
 }
 
+//双线性插值
 void bilinearIntertpolatioin(cv::Mat& src, cv::Mat& dst, const int rows, const int cols)
 {
     //比例尺

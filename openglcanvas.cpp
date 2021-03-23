@@ -395,7 +395,6 @@ void OpenGLCanvas::initializeGL() {
         printf("problem allocating memory for positions \n");
     }
     float fov_rads = (fov / 360.f) * CONST_PI_F;
-    vertex_transformation(positions, m, n, center_lambda, center_phi, fov_rads, scale); //passar pelo vertex shader
     float radio = (1.f * height) / (1.f * width);
     load_sphere_mesh(positions, m, n, radio); //colocar essa e funcoes para textura e triangulos no initializeGL
 
@@ -422,149 +421,6 @@ void OpenGLCanvas::define_texture_coordinates(float* texCoord,int m, int n, floa
         for (int j = 0; j < n; j++) {
             texCoord[2 * (j + i * n)] = delta_x * j;
             texCoord[2 * (j + i * n) + 1] = delta_y * i;
-        }
-    }
-}
-
-// This function makes the same computation GLSL does. It is never called.
-void OpenGLCanvas::vertex_transformation(float* positions, int m, int n, float center_lambda, float center_phi, float fov_rads, float scale) {
-
-    float min_lambda = -CONST_PI_F;
-    float max_lambda = CONST_PI_F;
-    float min_phi = -CONST_PI_2_F;
-    float max_phi = CONST_PI_2_F;
-
-    float delta_lambda = (max_lambda - min_lambda) / (1.0 * (n - 1));
-    float delta_phi = (max_phi - min_phi) / (1.0 * (m - 1));
-
-    float lambda, phi, x, y, z, u, v, r, theta;
-
-    //calculating the extent of the projection for the given FOV
-    lambda = fov_rads;
-    phi = 0.f;
-    // OpenGL: x is the vertical axes pointg downwards, and y is horizontal axes
-    y = sinf(phi);
-    x = -sinf(lambda) * cosf(phi);
-    z = -cosf(lambda) * cosf(phi);
-    u = 2.f * x / (1.f - z);
-    v = 2.f * y / (1.f - z);
-    r = hypotf(u, v);
-    theta = atan2f(u, v);
-    r *= scale;
-    u = -r * sinf(theta);
-    v = r * cosf(theta);
-    x = (4.f * u) / (u * u + v * v + 4.f);
-    y = (4.f * v) / (u * u + v * v + 4.f);
-    z = (u * u + v * v - 4.f) / (u * u + v * v + 4.f);
-    u = x / (-z);
-    v = y / (-z);
-    float extent = u;
-
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
-
-            lambda = (min_lambda + delta_lambda * j);
-            phi = (min_phi + delta_phi * i);
-
-            // OpenGL: x is the vertical axes pointg downwards, and y is horizontal axes
-            y = sinf(phi);
-            x = -sinf(lambda) * cosf(phi);
-            z = -cosf(lambda) * cosf(phi);
-
-            //Rotation 1: (-center_lambda)-rotation on the xz-plane
-            float x_copy = x;
-            x = cosf(-center_lambda) * x - sinf(-center_lambda) * z;
-            //y=1.f*y;
-            z = sinf(-center_lambda) * x_copy + cosf(-center_lambda) * z;
-
-            //Rotation 2: (-center_phi)-rotation on the yz-plane
-            float y_copy = y;
-            //x = 1.f*x;
-            y = cosf(-center_phi) * y - sinf(-center_phi) * z;
-            z = sinf(-center_phi) * y_copy + cosf(-center_phi) * z;
-
-            u = 2.f * x / (1.f - z);
-            v = 2.f * y / (1.f - z);
-
-            r = hypotf(u, v);
-            theta = atan2f(u, v);
-
-            // scaling the complex plane according to scale specified in the interface (relate it to FOV)
-            r *= scale;
-
-            u = -r * sinf(theta);
-            v = r * cosf(theta);
-
-            x = (4.f * u) / (u * u + v * v + 4.f);
-            y = (4.f * v) / (u * u + v * v + 4.f);
-            z = (u * u + v * v - 4.f) / (u * u + v * v + 4.f);
-
-            lambda = atan2f(x, -z) / CONST_PI_F;
-            phi = asinf(y) / CONST_PI_2_F;
-
-            if (visualization == "Moebius" || visualization == "Perspective") {
-                u = x / (-z);
-                v = y / (-z);
-                positions[3 * (j + i * n)] = u / extent;
-                positions[3 * (j + i * n) + 1] = v / extent;
-                positions[3 * (j + i * n) + 2] = z;
-            }
-            else if (visualization == "3D Sphere") {
-                positions[3 * (j + i * n)] = 0.9f * x;
-                positions[3 * (j + i * n) + 1] = 0.9f * y;
-                positions[3 * (j + i * n) + 2] = z;
-            }
-            else if (visualization == "Equi-Rectangular") {
-                positions[3 * (j + i * n)] = lambda;
-                positions[3 * (j + i * n) + 1] = phi;
-                positions[3 * (j + i * n) + 2] = z;
-            }
-            else if (visualization == "Stereographic") {
-                u = 2 * x / (-z + 1);
-                v = 2 * y / (-z + 1);
-                positions[3 * (j + i * n)] = u / extent;
-                positions[3 * (j + i * n) + 1] = v / extent;
-                positions[3 * (j + i * n) + 2] = z;
-            }
-            else if (visualization == "Mercator") {
-                u = lambda;
-                v = logf((1.0 / cosf(phi)) + tanf(phi));
-                positions[3 * (j + i * n)] = u / extent;
-                positions[3 * (j + i * n) + 1] = v / extent;
-                positions[3 * (j + i * n) + 2] = z;
-            }
-            else if (visualization == "Orthographic") {
-                u = x;
-                v = y;
-                positions[3 * (j + i * n)] = x / extent;
-                positions[3 * (j + i * n) + 1] = y / extent;
-                positions[3 * (j + i * n) + 2] = z;
-            }
-            else if (visualization == "Pannini") {
-                u = 2 * x / (-z + pd);
-                v = 2 * y / (-z + pd);
-                positions[3 * (j + i * n)] = u / extent;
-                positions[3 * (j + i * n) + 1] = v / extent;
-                positions[3 * (j + i * n) + 2] = z;
-            }
-            else if (visualization == "Zorin-Barr") {
-                // perspective
-                z = -1.f;
-                u = x / (-z);
-                v = y / (-z);
-                // apply Z-B transformation to (u,v)
-                float lambda = .1f;
-                float R = 1.f;
-                float alpha = atanf(v / u);
-                float r = hypotf(u, v);
-                float rhoprime = (lambda * r / R) + (1.f - lambda) * (R * (sqrtf(r * r + 1.f) - 1.f)) / (r * (sqrtf(R * R + 1.f) - 1.f));
-                u = rhoprime * cosf(alpha);
-                v = rhoprime * sinf(alpha);
-                //
-                positions[3 * (j + i * n)] = u / extent;
-                positions[3 * (j + i * n) + 1] = v / extent;
-                positions[3 * (j + i * n) + 2] = z;
-            }
         }
     }
 }
@@ -913,39 +769,6 @@ void OpenGLCanvas::paintGL() {
 
 void OpenGLCanvas::show_effected_imgs()
 {
-    load_rendered_img();
     effectdrawing* drawing= new effectdrawing(img_data_ptr);
     drawing->show();
-}
-
-void OpenGLCanvas::load_rendered_img()
-{
-    GLubyte* pPixelData;
-    pPixelData = (GLubyte*)malloc(width * height * 4);
-    if (pPixelData == 0)
-        exit(-1);
-    glReadBuffer(GL_FRONT);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pPixelData);
-
-    cv::Mat img;
-    std::vector<cv::Mat> imgPlanes;
-    img.create(height, width, CV_8UC3);
-    cv::split(img, imgPlanes);
-
-    for (int i = 0; i < height; i++) {
-        unsigned char* plane0Ptr = imgPlanes[0].ptr<unsigned char>(i);
-        unsigned char* plane1Ptr = imgPlanes[1].ptr<unsigned char>(i);
-        unsigned char* plane2Ptr = imgPlanes[2].ptr<unsigned char>(i);
-        for (int j = 0; j < width; j++) {
-            int k = 4 * (i * width + j);
-            plane2Ptr[j] = pPixelData[k];
-            plane1Ptr[j] = pPixelData[k + 1];
-            plane0Ptr[j] = pPixelData[k + 2];
-        }
-    }
-    cv::merge(imgPlanes, img);
-    cv::flip(img, img, 0);
-    cv::cvtColor(img, img, cv::COLOR_RGB2GRAY);
-    cv::imwrite("G:/VSProject/DFWAPCP/data/test.jpg", img);
 }

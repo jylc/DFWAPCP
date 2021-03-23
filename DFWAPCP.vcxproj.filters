@@ -88,9 +88,6 @@
     <ClCompile Include="demo.cpp">
       <Filter>Source Files\utils</Filter>
     </ClCompile>
-    <ClCompile Include="test_img.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="image_data.cpp">
       <Filter>Source Files\image</Filter>
     </ClCompile>

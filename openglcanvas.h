@@ -47,11 +47,9 @@ protected:
     void resizeGL(int w, int h);
     void paintGL();
     void define_texture_coordinates(float *texCoord, int m, int n, float min_phi, float max_phi, float min_lambda, float max_lambda);
-    void vertex_transformation(float *positions, int m, int n, float center_lambda, float center_phi, float fov_rads, float scale);
     void load_sphere_mesh(float *positions, int m, int n,float radio);
     float calculate_extent(float fov_rads);
     void define_triangle_indices(unsigned int * indices, int m, int n);
-    void load_rendered_img();
 private:
     int compute_auto_fov_max(int);
     void compute_scale();

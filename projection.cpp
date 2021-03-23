@@ -1,15 +1,12 @@
 #include "projection.h"
 
-cv::Mat StereoProjection::stereoTransformation() {
+const cv::Mat StereoProjection::stereoTransformation() const{
 
-    float phi, x, y, z, u, v, r;
-    float extent = calculateExtent();
-    fprintf(stderr, "extent = %f\n", extent);
+    float x, y, z, u, v, r;
 
     float center_x = n / 2;//ÁÐ
     float center_y = m / 2;//ÐÐ
-    cv::Mat res;
-    res.create(m / extent, n / extent, CV_8UC3);
+    cv::Mat res = cv::Mat::zeros(src_img.size(), CV_8UC3);
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
             x = j;
@@ -24,24 +21,39 @@ cv::Mat StereoProjection::stereoTransformation() {
             float focal_length = 600.f;
             float alpha = atan2f(v, u);
             float r = hypotf(u, v);
-            //float rhoprime = (lambda * r / R) + (1.f - lambda) * (R * (sqrtf(r * r + 1.f) - 1.f)) / (r * (sqrtf(R * R + 1.f) - 1.f));
             float ru = R * (tan(atan2f(r, focal_length) / (2.f - lambda)) / tan(atan2f(R, focal_length) / (2.f - lambda)));
             u = ru * cosf(alpha);
             v = ru * sinf(alpha);
-            x = (u + center_x) / extent;
-            y = (center_y - v) / extent;
+            x = (u + center_x) ;
+            y = (center_y - v) ;
             //
-            if (x >= 0 && x < n/extent && y >= 0 && y < m/extent)
+            if (x >= 0 && x < n && y >= 0 && y < m)
             {
                 res.at<cv::Vec3b>(y, x) = src_img.at<cv::Vec3b>(i, j);
             }
         }
     }
-    cv::resize(res, res, cv::Size(res.cols * extent, res.rows * extent));
+
+    cv::Mat inpaint_mask = cv::Mat::zeros(res.size(), CV_8U);
+    for (size_t y = 0; y < res.rows; y++)
+    {
+        for (size_t x = 0; x < res.cols; x++)
+        {
+            int a = res.at<cv::Vec3b>(y, x)[0];
+            int b = res.at<cv::Vec3b>(y, x)[1];
+            int c = res.at<cv::Vec3b>(y, x)[2];
+
+            if (a == 0 && b == 0 && c == 0)
+            {
+                inpaint_mask.at<uchar>(y, x) = 255;
+            }
+        }
+    }
+    inpaint(res, inpaint_mask, res, 3, cv::INPAINT_TELEA);
     return res;
 }
 
-std::vector<Point2> StereoProjection::stereoTramsformation(std::vector<Point2>& vertices)const
+const std::vector<Point2> StereoProjection::stereoTramsformation(const std::vector<Point2>& vertices)const
 {
     float phi, x, y, z, u, v, r;
 
@@ -65,7 +77,6 @@ std::vector<Point2> StereoProjection::stereoTramsformation(std::vector<Point2>& 
             float focal_length = 600.f;
             float alpha = atan2f(v, u);
             float r = hypotf(u, v);
-            //float rhoprime = (lambda * r / R) + (1.f - lambda) * (R * (sqrtf(r * r + 1.f) - 1.f)) / (r * (sqrtf(R * R + 1.f) - 1.f));
             float ru = R * (tan(atan2f(r, focal_length) / (2.f - lambda)) / tan(atan2f(R, focal_length) / (2.f - lambda)));
             u = ru * cosf(alpha);
             v = ru * sinf(alpha);
@@ -82,6 +93,7 @@ std::vector<Point2> StereoProjection::stereoTramsformation(std::vector<Point2>& 
     }
     return newVertices;
 }
+
 const float StereoProjection::calculateExtent()const
 {
     float lambda, phi, x, y, z, u, v, r, theta;

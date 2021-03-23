@@ -104,7 +104,6 @@
     <ClCompile Include="mesh_grid.cpp" />
     <ClCompile Include="openglcanvas.cpp" />
     <ClCompile Include="projection.cpp" />
-    <ClCompile Include="test_img.cpp" />
     <ClCompile Include="transform.cpp" />
     <QtRcc Include="dfwapcp.qrc" />
     <QtMoc Include="dfwapcp.h" />

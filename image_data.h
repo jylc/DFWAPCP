@@ -44,22 +44,18 @@ public:
 	const cv::Mat& getSrcImage()const;
 	const cv::Mat& getMaskImg()const;
 	const cv::Mat& getAlphaMaskImg()const;
-	const cv::Mat getIntersectedImg(cv::Mat img, int flag=0)const;//面部检测框与模板相交
+	const cv::Mat getIntersectedImg(cv::Mat img,bool flag=true)const;//面部检测框与模板相交
 	const cv::Mat getStereoImg()const;//stereo projection后的图像
-	const std::vector<LineData>& getLines()const;
 	const cv::Mat meshTransform()const;
 	const void meshInfo()const;
 	void clear();
 	const std::vector<cv::Rect2i> faceDetected()const;
 	const std::vector<bool> faceMaskWeight()const;
 	const std::vector<int> getCountOfWAndH();
-	const void drawVerticesOnImg(cv::Mat& srcImg,std::vector<Point2>& oldVertices, std::vector<Point2>& newVertices, std::vector<bool>& weights)const;
-	const void drawLinesOnImg(cv::Mat& srcImg, std::vector<Point2>& oldVertices, std::vector<Point2>& newVertices, std::vector<bool>& weights)const;
-	const cv::Mat blendImages()const;
-	const std::vector<cv::Mat> getImages()const;
-	//TODO: 该方法放在此处不太适合，待修改
-	const std::vector<Point2> getVerticesOfStereoImg()const;
+	const void drawVerticesOnImg(cv::Mat& srcImg,const std::vector<Point2>& oldVertices,const std::vector<Point2>& newVertices,const std::vector<bool>& weights)const;
 
+private:
+	const std::vector<Point2> mixedMesh(const std::vector<Point2>& old_vertices, const std::vector<Point2>& new_vertices,const std::vector<bool>& weight)const;
 
 private:
 	mutable std::vector<LineData> m_img_lines;
