@@ -8,10 +8,9 @@ effectdrawing::effectdrawing(
 	img_data_ptr(_img_data_ptr)
 {
 	ui.setupUi(this);
-	cv::Mat img = img_data_ptr->getSrcImage();
-	cv::Mat src_img = img_data_ptr->getIntersectedImg(img);
-	cv::Mat stereo_img = img_data_ptr->getIntersectedImg(img_data_ptr->getStereoImg(),false);
-	cv::Mat middle_img = img_data_ptr->meshTransform();
+	cv::Mat src_img = img_data_ptr->getIntersectedImg(img_data_ptr->getSrcImage(),-1);
+	cv::Mat middle_img = img_data_ptr->getIntersectedImg(img_data_ptr->getOptimizedStereoImg(), 3);
+	cv::Mat stereo_img = img_data_ptr->getIntersectedImg(img_data_ptr->getStereoImg(), 3);
 	if (src_img.empty() || stereo_img.empty()||middle_img.empty())
 	{
 		fprintf(stderr, "[Effectdrawing] cannot get source image or effected image");
@@ -33,11 +32,11 @@ effectdrawing::effectdrawing(
 		ui.srcimg->setPixmap(QPixmap::fromImage(img1));
 		ui.srcimg->adjustSize();
 
-		ui.stereoimg->setPixmap(QPixmap::fromImage(img2));
-		ui.stereoimg->adjustSize();
-
 		ui.middleimg->setPixmap(QPixmap::fromImage(img3));
 		ui.middleimg->adjustSize();
+
+		ui.stereoimg->setPixmap(QPixmap::fromImage(img2));
+		ui.stereoimg->adjustSize();
 	}
 }
 

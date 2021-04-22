@@ -55,15 +55,18 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <IncludePath>H:\Opencv\build\include;G:\lib\libfacedetection\build\include;$(IncludePath)</IncludePath>
-    <LibraryPath>H:\Opencv\build\x64\vc15\lib;G:\lib\libfacedetection\build\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>H:\Opencv\build\include;G:\lib\ceres_install\install\eigen3\include;G:\lib\libfacedetection\build\include;G:\lib\ceres_install\install\ceres\include;G:\lib\ceres_install\install\gflags\include;G:\lib\ceres_install\install\glog\include;G:\lib\ceres_install\install\eigen3\include\eigen3;$(IncludePath)</IncludePath>
+    <LibraryPath>H:\Opencv\build\x64\vc15\lib;G:\lib\libfacedetection\build\lib;G:\lib\ceres_install\install\ceres\lib;G:\lib\ceres_install\install\glog\lib;G:\lib\ceres_install\install\gflags\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
-      <AdditionalDependencies>opengl32.lib;opencv_world440d.lib;facedetection.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;opencv_world440d.lib;facedetection.lib;ceres-debug.lib;gflags_debug.lib;gflags_nothreads_debug.lib;glogd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <ClCompile>
+      <PreprocessorDefinitions>_USE_MATH_DEFINES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>

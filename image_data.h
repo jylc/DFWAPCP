@@ -30,7 +30,7 @@ public:
 		const std::string& _mask_file_name,
 		const double _focal_length);
 
-	ImageData();
+	ImageData() = default;
 
 	ImageData& operator=(const ImageData& data)
 	{
@@ -41,12 +41,13 @@ public:
 	}
 
 	const cv::Mat& getGreyImage()const;
-	const cv::Mat& getSrcImage()const;
+	const std::vector<Point2>& getSrcImage()const;
 	const cv::Mat& getMaskImg()const;
 	const cv::Mat& getAlphaMaskImg()const;
-	const cv::Mat getIntersectedImg(cv::Mat img,bool flag=true)const;//面部检测框与模板相交
-	const cv::Mat getStereoImg()const;//stereo projection后的图像
-	const cv::Mat meshTransform()const;
+	const cv::Mat getIntersectedImg(const std::vector<Point2>& vertices,int flag=0)const;//面部检测框与模板相交
+	const std::vector<Point2> getStereoImg()const;//stereo projection后的图像
+	const std::vector<Point2> getOptimizedStereoImg()const;
+	const cv::Mat meshTransform(const std::vector<Point2>& new_vertices)const;
 	const void meshInfo()const;
 	void clear();
 	const std::vector<cv::Rect2i> faceDetected()const;

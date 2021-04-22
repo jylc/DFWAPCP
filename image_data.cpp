@@ -66,7 +66,6 @@ m_focal_length(_focal_length)
 	m_mesh_2d = std::make_unique<MeshGrid>(m_img.cols, m_img.rows);
 }
 
-ImageData::ImageData(){}
 
 const cv::Mat& ImageData::getGreyImage()const
 {
@@ -77,9 +76,9 @@ const cv::Mat& ImageData::getGreyImage()const
 	return m_grey_img;
 }
 
-const cv::Mat& ImageData::getSrcImage()const
+const std::vector<Point2>& ImageData::getSrcImage()const
 {
-	return m_img;
+	return m_mesh_2d->getVertices();
 }
 
 const cv::Mat& ImageData::getAlphaMaskImg()const
@@ -118,7 +117,7 @@ const void ImageData::meshInfo()const
 
 }
 
-const cv::Mat ImageData::getIntersectedImg(cv::Mat img, bool flag)const
+const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, int flag)const
 {
 	cv::Mat result;
 	std::vector<short*> rectangle_infos;
@@ -126,7 +125,7 @@ const cv::Mat ImageData::getIntersectedImg(cv::Mat img, bool flag)const
 	rectangle_infos = face.Detect();    //面部框的信息及其中点信息
 	result = face.Processed();
 
-	cv::Mat clone_mask = img.clone();
+	cv::Mat result_img = meshTransform(vertices);//点化图
 	for (auto it = rectangle_infos.cbegin(); it != rectangle_infos.cend(); ++it)
 	{
 		int confidence = (*it)[0];
@@ -139,25 +138,53 @@ const cv::Mat ImageData::getIntersectedImg(cv::Mat img, bool flag)const
 
 		char s_score[255];
 		snprintf(s_score, 255, "%d", confidence);
-		cv::putText(clone_mask, s_score, cv::Point(x, y - 3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
-		rectangle(clone_mask, Rect(x - w / 2, y - h, 2 * w, 2 * h), Scalar(0, 255, 0), 2);
+		cv::putText(result_img, s_score, cv::Point(x, y - 3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+		rectangle(result_img, Rect(x - w / 2, y - h, 2 * w, 2 * h), Scalar(0, 255, 0), 2);
+		//rectangle(result_img, Rect(x, y , w, h), Scalar(0, 255, 0), 2);
 	}
 	StereoProjection stereo_projection(m_img);
 	const std::vector<Point2>& old_vertices = m_mesh_2d->getVertices();
 	const std::vector<Point2>& new_vertices = stereo_projection.stereoTramsformation(old_vertices);
 	const std::vector<bool>& face_weights = faceMaskWeight();
 	//默认显示原图网格
-	
-	drawVerticesOnImg(clone_mask, old_vertices, flag ? old_vertices : new_vertices, face_weights);
-	return clone_mask;
+	if (flag == -1)
+		return result_img;
+	else if (flag == 0)
+		drawVerticesOnImg(result_img, old_vertices, old_vertices, face_weights);
+	else if(flag ==1)//混合
+		drawVerticesOnImg(result_img, old_vertices, new_vertices, face_weights);
+	else if(flag==2)//stereo
+		drawVerticesOnImg(result_img, new_vertices, new_vertices, face_weights);
+	else if (flag == 3)//optimized
+		drawVerticesOnImg(result_img, vertices, vertices, face_weights);
+	return result_img;
 }
 
-const cv::Mat ImageData::getStereoImg()const
+const std::vector<Point2> ImageData::getStereoImg()const
 {
 	//TODO:focal length暂时设置为600.f
 	cv::Mat src_img = m_img.clone();
 	StereoProjection stereo_projection(src_img);
-	return stereo_projection.stereoTransformation();
+	return stereo_projection.stereoTramsformation(m_mesh_2d->getVertices());
+}
+
+const std::vector<Point2> ImageData::getOptimizedStereoImg()const
+{
+	const cv::Mat& src_img = m_img.clone();
+	const std::vector<Point2>& old_vertices = m_mesh_2d->getVertices();
+	StereoProjection stereo_projection(src_img);
+	const std::vector<Point2>& new_vertices = stereo_projection.stereoTramsformation(old_vertices);
+	const std::vector<bool>& face_weights = faceMaskWeight();
+	const std::vector<cv::Rect2i>& face_region = faceDetected();
+	const std::vector<Edge>& edges = m_mesh_2d->getEdges();
+	MeshOptimization mesh_Optimization(src_img, face_region, new_vertices, old_vertices, edges,face_weights);
+	std::vector<Triplet<double>> triplets;
+	std::vector<std::pair<int, double>> b_vector;
+	triplets.reserve((old_vertices.size()+ edges.size()) * DIMENSION_2D * old_vertices.size() * DIMENSION_2D);
+	b_vector.reserve((old_vertices.size()+edges.size()) * DIMENSION_2D);
+	mesh_Optimization.getFaceObjectiveTerm(triplets, b_vector, false);
+	//mesh_Optimization.getLineBlendingTerm(triplets, b_vector);
+	return mesh_Optimization.getImageVerticesBySolving(triplets, b_vector);
 }
 
 //检测面部区域
@@ -178,15 +205,13 @@ const std::vector<cv::Rect2i> ImageData::faceDetected()const
 		int w = (*it)[3];
 		int h = (*it)[4];
 
-		//char s_score[255];
-		//snprintf(s_score, 255, "%d", confidence);
 		m_face_region.emplace_back(x - w / 2, y - h, 2 * w, 2 * h);
 	}
 	return m_face_region;
 }
 
 //网格变换
-const cv::Mat ImageData::meshTransform()const
+const cv::Mat ImageData::meshTransform(const std::vector<Point2>& new_vertices)const
 {
 	const std::vector<Point2> &old_vertices = m_mesh_2d->getVertices();
 	const std::vector<Indices> &polygons_indices = m_mesh_2d->getPolygonsIndices();
@@ -195,7 +220,6 @@ const cv::Mat ImageData::meshTransform()const
 	cv::Mat src_img = m_img.clone();
 	StereoProjection stereo_projection(src_img);
 
-	std::vector<Point2> new_vertices = stereo_projection.stereoTramsformation(old_vertices);
 	affine_transforms.reserve(polygons_indices.size() * (triangulation_indices.size()));
 	const Point2 shift(0.5, 0.5);
 	const int NO_GRID = -1, TRIANGLE_COUNT = 3, PRECISION = 0;
@@ -277,7 +301,7 @@ const cv::Mat ImageData::meshTransform()const
 
 			if (a==0&&b==0&&c==0)
 			{
-				inpaint_mask.at<uchar>(y, x)=255;
+				inpaint_mask.at<uchar>(y, x) = 255;
 			}
 		}
 	}
@@ -290,7 +314,7 @@ const std::vector<bool> ImageData::faceMaskWeight()const
 	const std::vector<Point2> vertices = m_mesh_2d->getVertices();
 	const std::vector<cv::Rect2i> face_region = faceDetected();
 	std::vector<bool> weight(vertices.size(),false);
-	cv::Mat src_img = getSrcImage();
+	cv::Mat src_img = m_img;
 	cv::Mat mask_img = getMaskImg();
 	cv::Mat img = cv::Mat::zeros(src_img.size(), CV_8UC3);
 	int index = 0;
