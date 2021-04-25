@@ -52,7 +52,7 @@ public:
 	void clear();
 	const std::vector<cv::Rect2i> faceDetected()const;
 	const std::vector<bool> faceMaskWeight()const;
-	const std::vector<int> getCountOfWAndH();
+	const std::vector<int> getCountOfWAndH()const;
 	const void drawVerticesOnImg(cv::Mat& srcImg,const std::vector<Point2>& oldVertices,const std::vector<Point2>& newVertices,const std::vector<bool>& weights)const;
 
 private:

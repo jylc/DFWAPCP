@@ -119,14 +119,13 @@ const void ImageData::meshInfo()const
 
 const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, int flag)const
 {
-	cv::Mat result;
 	std::vector<short*> rectangle_infos;
 	FaceDetect face(m_img);
 	rectangle_infos = face.Detect();    //面部框的信息及其中点信息
-	result = face.Processed();
-
+	
 	cv::Mat result_img = meshTransform(vertices);//点化图
-	for (auto it = rectangle_infos.cbegin(); it != rectangle_infos.cend(); ++it)
+	//cv::Mat result_img = imgTransform(vertices);
+	/*for (auto it = rectangle_infos.cbegin(); it != rectangle_infos.cend(); ++it)
 	{
 		int confidence = (*it)[0];
 		int x = (*it)[1];
@@ -140,23 +139,22 @@ const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, 
 		snprintf(s_score, 255, "%d", confidence);
 		cv::putText(result_img, s_score, cv::Point(x, y - 3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
 		rectangle(result_img, Rect(x - w / 2, y - h, 2 * w, 2 * h), Scalar(0, 255, 0), 2);
-		//rectangle(result_img, Rect(x, y , w, h), Scalar(0, 255, 0), 2);
-	}
+	}*/
 	StereoProjection stereo_projection(m_img);
 	const std::vector<Point2>& old_vertices = m_mesh_2d->getVertices();
 	const std::vector<Point2>& new_vertices = stereo_projection.stereoTramsformation(old_vertices);
 	const std::vector<bool>& face_weights = faceMaskWeight();
 	//默认显示原图网格
-	if (flag == -1)
-		return result_img;
-	else if (flag == 0)
-		drawVerticesOnImg(result_img, old_vertices, old_vertices, face_weights);
-	else if(flag ==1)//混合
-		drawVerticesOnImg(result_img, old_vertices, new_vertices, face_weights);
-	else if(flag==2)//stereo
-		drawVerticesOnImg(result_img, new_vertices, new_vertices, face_weights);
-	else if (flag == 3)//optimized
-		drawVerticesOnImg(result_img, vertices, vertices, face_weights);
+	//if (flag == -1)
+	//	return result_img;
+	//else if (flag == 0)
+	//	drawVerticesOnImg(result_img, old_vertices, old_vertices, face_weights);
+	//else if(flag ==1)//混合
+	//	drawVerticesOnImg(result_img, old_vertices, new_vertices, face_weights);
+	//else if(flag==2)//stereo
+	//	drawVerticesOnImg(result_img, new_vertices, new_vertices, face_weights);
+	//else if (flag == 3)//optimized
+	//drawVerticesOnImg(result_img, new_vertices, new_vertices, face_weights);
 	return result_img;
 }
 
@@ -177,14 +175,19 @@ const std::vector<Point2> ImageData::getOptimizedStereoImg()const
 	const std::vector<bool>& face_weights = faceMaskWeight();
 	const std::vector<cv::Rect2i>& face_region = faceDetected();
 	const std::vector<Edge>& edges = m_mesh_2d->getEdges();
-	MeshOptimization mesh_Optimization(src_img, face_region, new_vertices, old_vertices, edges,face_weights);
-	std::vector<Triplet<double>> triplets;
-	std::vector<std::pair<int, double>> b_vector;
-	triplets.reserve((old_vertices.size()+ edges.size()) * DIMENSION_2D * old_vertices.size() * DIMENSION_2D);
-	b_vector.reserve((old_vertices.size()+edges.size()) * DIMENSION_2D);
-	mesh_Optimization.getFaceObjectiveTerm(triplets, b_vector, false);
+	const std::vector<Indices>& v_neighbors = m_mesh_2d->getVertexStructures();
+	MeshOptimization mesh_Optimization(src_img, face_region, new_vertices, old_vertices, edges, face_weights, v_neighbors);
+	//std::vector<Triplet<double>> triplets;
+	//std::vector<std::pair<int, double>> b_vector;
+	//triplets.reserve((old_vertices.size()+ edges.size()) * DIMENSION_2D * old_vertices.size() * DIMENSION_2D);
+	//b_vector.reserve((old_vertices.size()+edges.size()) * DIMENSION_2D);
+	//mesh_Optimization.getFaceObjectiveTerm(triplets, b_vector, false);
 	//mesh_Optimization.getLineBlendingTerm(triplets, b_vector);
-	return mesh_Optimization.getImageVerticesBySolving(triplets, b_vector);
+	//mesh_Optimization.getImageVerticesBySolving(triplets, b_vector);
+	std::vector<cv::Point2f> optimized_vertices;
+	optimized_vertices.reserve(old_vertices.size());
+	mesh_Optimization.getImageVerticesBySolving(optimized_vertices);
+	return optimized_vertices;
 }
 
 //检测面部区域
@@ -205,7 +208,7 @@ const std::vector<cv::Rect2i> ImageData::faceDetected()const
 		int w = (*it)[3];
 		int h = (*it)[4];
 
-		m_face_region.emplace_back(x - w / 2, y - h, 2 * w, 2 * h);
+		m_face_region.emplace_back(x - w / 2, y - h, 2 * w , 2 * h + h / 4);
 	}
 	return m_face_region;
 }
@@ -225,9 +228,7 @@ const cv::Mat ImageData::meshTransform(const std::vector<Point2>& new_vertices)c
 	const int NO_GRID = -1, TRIANGLE_COUNT = 3, PRECISION = 0;
 	cv::Mat polygon_index_mask(src_img.rows + shift.y, src_img.cols + shift.x, CV_32SC1, Scalar::all(NO_GRID));
 	int label = 0;
-	std::vector<bool> face_mask_weight = faceMaskWeight();
-	std::vector<Point2> tmp_vertices = mixedMesh(old_vertices, new_vertices, face_mask_weight);
-
+	std::vector<Point2> tmp_vertices = new_vertices;
 	for (int i = 0; i < polygons_indices.size(); ++i)//四边形
 	{
 		for (int j = 0; j < triangulation_indices.size(); ++j)//三角形顶点
@@ -340,7 +341,7 @@ const std::vector<bool> ImageData::faceMaskWeight()const
 	return weight;
 }
 
-const std::vector<int> ImageData::getCountOfWAndH()
+const std::vector<int> ImageData::getCountOfWAndH()const
 {
 	if (m_mesh_2d == nullptr)
 	{
@@ -376,3 +377,4 @@ const std::vector<Point2> ImageData::mixedMesh(
 	}
 	return mixed_mesh_vertices;
 }
+
