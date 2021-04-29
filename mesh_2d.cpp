@@ -5,6 +5,7 @@ Mesh2D::Mesh2D(const int _cols, const int _rows)
 	nh = _rows / GRID_SIZE + (_rows % GRID_SIZE != 0);//高度的网格数
 	lw = _cols / (double)nw;//网格尺寸
 	lh = _rows / (double)nh;//网格尺寸
+
 }
 
 Mesh2D::~Mesh2D() {}

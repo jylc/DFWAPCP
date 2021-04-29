@@ -7,8 +7,12 @@
 #include "ceres/ceres.h"
 #include "glog/logging.h"
 using ceres::AutoDiffCostFunction;
+using ceres::DynamicAutoDiffCostFunction;
+using ceres::DynamicNumericDiffCostFunction;
 using ceres::CostFunction;
 using ceres::CauchyLoss;
+using ceres::TrivialLoss;
+using ceres::HuberLoss;
 using ceres::Problem;
 using ceres::Solve;
 using ceres::Solver;
@@ -39,7 +43,7 @@ public:
 		n = width;
 		m = height;
 		scale = 1.f;
-		fov_rads = 1.f;
+		fov_rads = 97.f;
 	}
 
 	//Stereographic projection
@@ -47,6 +51,7 @@ public:
 	const std::vector<Point2> stereoTramsformation(const std::vector<Point2>& vertices)const;
 private:
 	const float calculateExtent()const;
+	const float fovToFocal(float fov,float d)const;
 private:
 	float focal_length;
 	float fov_rads;
@@ -65,6 +70,8 @@ public:
 		const std::vector<Edge>& _edges,
 		const std::vector<bool>& _weights,
 		const std::vector<Indices>& _v_neighbors,
+		const std::vector<int>& _w_and_h,
+		const std::vector<double> _little_mesh_size,
 		float _focal_length = 600.0f)
 		:Projection(_src_img),
 		m_face_region(_face_region),
@@ -72,17 +79,19 @@ public:
 		m_vertices(_vertices),
 		m_edges(_edges),
 		m_weights(_weights),
-		m_v_neighbors(_v_neighbors)
+		m_v_neighbors(_v_neighbors),
+		little_mesh_size(_little_mesh_size),
+		w_and_h(_w_and_h)
 	{}
 	//默认使用各种参数进行网格优化
 	/*===================START===================*/
 	//解析解求解，未完成
-	const void getFaceObjectiveTerm(std::vector<Triplet<double>>& triplets,
+	/*const void getFaceObjectiveTerm(std::vector<Triplet<double>>& triplets,
 		std::vector<std::pair<int, double>>& b_vector, bool flag = true)const;
 	const void getLineBlendingTerm(std::vector<Triplet<double>>& triplets,
 		std::vector<std::pair<int, double>>& b_vector)const;
 	std::vector<Point2> getImageVerticesBySolving(std::vector<Triplet<double>>& triplets,
-		const std::vector<std::pair<int, double>>& b_vector);
+		const std::vector<std::pair<int, double>>& b_vector);*/
 	/*==================END====================*/
 
 	/*===================START===================*/
@@ -99,6 +108,8 @@ private:
 	const std::vector<Edge>& m_edges;
 	const std::vector<bool>& m_weights;//权重
 	const std::vector<Indices>& m_v_neighbors;
+	const std::vector<int> w_and_h;
+	const std::vector<double> little_mesh_size;
 };
 
 struct FaceObjectTermEnergy
@@ -110,11 +121,11 @@ struct FaceObjectTermEnergy
 
 	template <typename T>
 	bool operator()(const T* const x, const T* const y, T* residual) const {
-
-		residual[0] = (T(weight) * T(m)) * (x[0] - S[0] * T(s_x)) * (x[0] - S[0] * T(s_x));
-		residual[1] = (T(weight) * T(m)) * (y[0] - S[3] * T(s_y)) * (y[0] - S[3] * T(s_y));
-		residual[0] *= T(4);
-		residual[1] *= T(4);
+		T a = T(0.0), b = T(0.0);
+		a = (T(weight) * T(m)) * (x[0] - S[0] * T(s_x)) * (x[0] - S[0] * T(s_x));
+		b = (T(weight) * T(m)) * (y[0] - S[3] * T(s_y)) * (y[0] - S[3] * T(s_y));
+		residual[0] = (a) * T(4);
+		residual[1] = b * T(4);
 		return true;
 	}
 private:
@@ -133,13 +144,13 @@ struct LineBlendingTermEnergy
 	template<typename T>
 	bool operator()(const T* const x1, const T* const y1, const T* const x2, const T* const y2, T* residual)const
 	{
-		T x = (x1[0] - x2[0]), y = (y1[0] - y2[0]), z = T(0);
-		residual[0] = (y * T(e_z) - z * T(e_y))* (y * T(e_z) - z * T(e_y));
-		residual[1] = (z * T(e_x) - x * T(e_z))* (z * T(e_x) - x * T(e_z));
-		residual[2] = (x * T(e_y) - y * T(e_x))* (x * T(e_y) - y * T(e_x));
-		residual[0] *= T(4);
-		residual[1] *= T(4);
-		residual[2] *= T(4);
+		T x = (x1[0] - x2[0]), y = (y1[0] - y2[0]), z = T(0), a = T(0), b = T(0), c = T(0);
+		a = (y * T(e_z) - z * T(e_y))* (y * T(e_z) - z * T(e_y));
+		b = (z * T(e_x) - x * T(e_z))* (z * T(e_x) - x * T(e_z));
+		c = (x * T(e_y) - y * T(e_x)) * (x * T(e_y) - y * T(e_x));
+		residual[0] = (a + b + c) * T(2) / T(3);
+		//residual[1] = b* T(4);
+		//residual[2] = c* T(4);
 		return true;
 	}
 
@@ -152,22 +163,17 @@ private:
 
 struct RegularizationTermEnergy
 {
-	RegularizationTermEnergy(std::vector<cv::Point2f> _neighbors):neighbors(_neighbors){}
-
 	template<typename T>
-	bool operator()(const T* const x1, const T* const y1, T* residual)const
+	bool operator()(const T* const x1, const T* const y1, const T* const x2, const T* const y2, T* residual)const
 	{
-		T a = T(0.), b = T(0.);
-		for (size_t i = 0; i < neighbors.size(); i++)
-		{
-			a += (x1[0] - T(neighbors[i].x))* (x1[0] - T(neighbors[i].x));
-			b += (y1[0] - T(neighbors[i].y))* (y1[0] - T(neighbors[i].y));
-		}
-		residual[0] = a * T(0.5);
-		residual[1] = b * T(0.5);
+		T a = T(0.0), b = T(0.0);
+		a += (x1[0] - x2[0])* (x1[0] - x2[0]);
+		b += (y1[0] - y2[0])* (y1[0] - y2[0]);
+		residual[0] = (a+b)* T(.5);
+		//residual[1] = b* T(.5);
 		return true;
 	}
 private:
-	std::vector<cv::Point2f> neighbors;
 };
+
 #endif // !PROJECTION_H

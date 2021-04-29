@@ -46,6 +46,8 @@ m_focal_length(_focal_length)
 	}
 
 	float original_img_size = m_img.rows * m_img.cols;
+	rows = m_img.rows;
+	cols = m_img.cols;
 	if (original_img_size > DOWN_SAMPLE_IMAGE_SIZE)
 	{
 		float scale = sqrt(DOWN_SAMPLE_IMAGE_SIZE / original_img_size);	
@@ -119,12 +121,11 @@ const void ImageData::meshInfo()const
 
 const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, int flag)const
 {
-	std::vector<short*> rectangle_infos;
-	FaceDetect face(m_img);
-	rectangle_infos = face.Detect();    //面部框的信息及其中点信息
+	//std::vector<short*> rectangle_infos;
+	//FaceDetect face(m_img);
+	//rectangle_infos = face.Detect();    //面部框的信息及其中点信息
 	
 	cv::Mat result_img = meshTransform(vertices);//点化图
-	//cv::Mat result_img = imgTransform(vertices);
 	/*for (auto it = rectangle_infos.cbegin(); it != rectangle_infos.cend(); ++it)
 	{
 		int confidence = (*it)[0];
@@ -140,13 +141,10 @@ const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, 
 		cv::putText(result_img, s_score, cv::Point(x, y - 3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
 		rectangle(result_img, Rect(x - w / 2, y - h, 2 * w, 2 * h), Scalar(0, 255, 0), 2);
 	}*/
-	StereoProjection stereo_projection(m_img);
-	const std::vector<Point2>& old_vertices = m_mesh_2d->getVertices();
-	const std::vector<Point2>& new_vertices = stereo_projection.stereoTramsformation(old_vertices);
 	const std::vector<bool>& face_weights = faceMaskWeight();
 	//默认显示原图网格
-	//if (flag == -1)
-	//	return result_img;
+	if (flag == -1)
+		return result_img;
 	//else if (flag == 0)
 	//	drawVerticesOnImg(result_img, old_vertices, old_vertices, face_weights);
 	//else if(flag ==1)//混合
@@ -154,13 +152,12 @@ const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, 
 	//else if(flag==2)//stereo
 	//	drawVerticesOnImg(result_img, new_vertices, new_vertices, face_weights);
 	//else if (flag == 3)//optimized
-	//drawVerticesOnImg(result_img, new_vertices, new_vertices, face_weights);
+	drawVerticesOnImg(result_img, vertices, vertices, face_weights);
 	return result_img;
 }
 
 const std::vector<Point2> ImageData::getStereoImg()const
 {
-	//TODO:focal length暂时设置为600.f
 	cv::Mat src_img = m_img.clone();
 	StereoProjection stereo_projection(src_img);
 	return stereo_projection.stereoTramsformation(m_mesh_2d->getVertices());
@@ -176,14 +173,10 @@ const std::vector<Point2> ImageData::getOptimizedStereoImg()const
 	const std::vector<cv::Rect2i>& face_region = faceDetected();
 	const std::vector<Edge>& edges = m_mesh_2d->getEdges();
 	const std::vector<Indices>& v_neighbors = m_mesh_2d->getVertexStructures();
-	MeshOptimization mesh_Optimization(src_img, face_region, new_vertices, old_vertices, edges, face_weights, v_neighbors);
-	//std::vector<Triplet<double>> triplets;
-	//std::vector<std::pair<int, double>> b_vector;
-	//triplets.reserve((old_vertices.size()+ edges.size()) * DIMENSION_2D * old_vertices.size() * DIMENSION_2D);
-	//b_vector.reserve((old_vertices.size()+edges.size()) * DIMENSION_2D);
-	//mesh_Optimization.getFaceObjectiveTerm(triplets, b_vector, false);
-	//mesh_Optimization.getLineBlendingTerm(triplets, b_vector);
-	//mesh_Optimization.getImageVerticesBySolving(triplets, b_vector);
+	const std::vector<int> w_and_h = getCountOfWAndH();
+	const std::vector<double> little_mesh_size = getLittleMeshSize();
+	MeshOptimization mesh_Optimization(src_img, face_region, new_vertices, old_vertices, edges, face_weights, v_neighbors, w_and_h,little_mesh_size);
+
 	std::vector<cv::Point2f> optimized_vertices;
 	optimized_vertices.reserve(old_vertices.size());
 	mesh_Optimization.getImageVerticesBySolving(optimized_vertices);
@@ -348,7 +341,19 @@ const std::vector<int> ImageData::getCountOfWAndH()const
 		fprintf(stderr, "[ImageData getCountOfWAndH]: m_mesh_2d is null\n");
 		exit(-1);
 	}
-	std::vector<int> list = { m_mesh_2d->nw,m_mesh_2d->nh };
+	std::vector<int> list = { m_mesh_2d->nw,m_mesh_2d->nh};
+	return list;
+}
+
+const std::vector<double> ImageData::getLittleMeshSize()const
+{
+	if (m_mesh_2d == nullptr)
+	{
+		fprintf(stderr, "[ImageData getLittleMeshSize]: m_mesh_2d is null\n");
+		exit(-1);
+	}
+
+	std::vector<double> list = { m_mesh_2d->lw,m_mesh_2d->lh };
 	return list;
 }
 

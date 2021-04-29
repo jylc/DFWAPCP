@@ -53,6 +53,7 @@ public:
 	const std::vector<cv::Rect2i> faceDetected()const;
 	const std::vector<bool> faceMaskWeight()const;
 	const std::vector<int> getCountOfWAndH()const;
+	const std::vector<double> getLittleMeshSize()const;
 	const void drawVerticesOnImg(cv::Mat& srcImg,const std::vector<Point2>& oldVertices,const std::vector<Point2>& newVertices,const std::vector<bool>& weights)const;
 
 private:
@@ -65,6 +66,7 @@ private:
 	mutable cv::Mat m_mask_img;
 	mutable std::vector<cv::Rect2i> m_face_region;
 	mutable std::vector<cv::Mat> m_images;
+	int cols, rows;
 };
 
 #endif // !IMAGE_DATA
