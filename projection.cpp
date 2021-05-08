@@ -132,6 +132,7 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
 
     double* X;
     double* Y;
+    double right, bottom;
     const size_t vertices_length = m_vertices.size();
     int nw = w_and_h[0];
     int nh = w_and_h[1];
@@ -145,7 +146,8 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
         X[i] =double(m_vertices[i].x);
         Y[i] =double(m_vertices[i].y);
     }
-
+    right = X[vertices_length - 1];
+    bottom = Y[vertices_length - 1];
     Problem problem;
     for (size_t i = 0; i < vertices_length; i++)
     {
@@ -164,48 +166,46 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
             new FaceObjectTermEnergy(m_stereo_mesh[i].x, m_stereo_mesh[i].y, w, m, S));
         problem.AddResidualBlock(face_energy, nullptr, &X[i], &Y[i]);
     }
-
-    size_t edges_length = m_edges.size();
-    for (size_t i = 0; i < edges_length; i++)
+    size_t index = 0;
+    bool xp1 = false, yp1 = false, xp2 = false, yp2 = false;
+    for (int h = 0; h <= nh; ++h)
     {
-        Edge edge = m_edges[i];
-        const int ind_e1 = edge.indices[0];
-        const int ind_e2 = edge.indices[1];
-        cv::Point2f e_vertice = m_vertices[ind_e1] - m_vertices[ind_e2];
-        float distance = hypotf(e_vertice.x, e_vertice.y);
-        e_vertice.x /= distance;
-        e_vertice.y /= distance;
-        if (m_vertices[ind_e1].x == 0 || m_vertices[ind_e1].x == nw * lw || m_vertices[ind_e1].y == 0 || m_vertices[ind_e1].y == nh * lh)
-            continue;
-
-        CostFunction* line_energy = new AutoDiffCostFunction<LineBlendingTermEnergy, 1, 1, 1,1,1>(
-            new LineBlendingTermEnergy(e_vertice.x, e_vertice.y, 0));
-        problem.AddResidualBlock(line_energy, nullptr, &X[ind_e1], &Y[ind_e1], &X[ind_e2], &Y[ind_e2]);
-        CostFunction* regularization_energy = new AutoDiffCostFunction<RegularizationTermEnergy, 1, 1, 1, 1, 1>(
-            new RegularizationTermEnergy());
-        problem.AddResidualBlock(regularization_energy, nullptr, &X[ind_e1], &Y[ind_e1], &X[ind_e2], &Y[ind_e2]);
+        for (int w = 0; w <= nw; ++w)
+        {
+            if (h==0||h==nh||w==0||w==nw)
+            {
+                if (h == 0)
+                    yp1 = true;
+                if (h == nh)
+                    yp2 = true;
+                if (w == 0)
+                    xp1 = true;
+                if (w == nw)
+                    xp2 = true;
+                CostFunction* boundary_energy = new AutoDiffCostFunction<MeshBoundaryTermEnergy, 1, 1, 1>(
+                    new MeshBoundaryTermEnergy(0, right, 0, bottom, xp1, yp1, xp2, yp2));
+                problem.AddResidualBlock(boundary_energy, nullptr, &X[index], &Y[index]);
+                xp1 = false, yp1 = false, xp2 = false, yp2 = false;
+            }
+            index++;
+        }
     }
 
-    /*for (size_t i = 0; i < vertices_length; i++)
+    for (size_t i = 0; i < vertices_length; i++)
     {
-        std::vector<cv::Point2f> n;
         for (int v = 0; v < m_v_neighbors[i].indices.size(); ++v) {
             int v_index = m_v_neighbors[i].indices[v];
-            n.emplace_back(cv::Point2f(float(X[v_index]), float(Y[v_index])));
-            if (m_vertices[i].x == 0 || m_vertices[i].x == nw * lw || m_vertices[i].y == 0 || m_vertices[i].y == nh * lh)
-                continue;
             cv::Point2f e_vertice = m_vertices[i] - m_vertices[v_index];
             float distance = hypotf(e_vertice.x, e_vertice.y);
             e_vertice.x /= distance;
             e_vertice.y /= distance;
-            CostFunction* line_energy = new AutoDiffCostFunction<LineBlendingTermEnergy, 1, 1, 1, 1, 1>(
+            CostFunction* line_energy = new AutoDiffCostFunction<LineBlendingTermEnergy, 3, 1, 1, 1, 1>(
                 new LineBlendingTermEnergy(e_vertice.x, e_vertice.y, 0));
             problem.AddResidualBlock(line_energy, nullptr, &X[i], &Y[i], &X[v_index], &Y[v_index]);
-            CostFunction* regularization_energy = new AutoDiffCostFunction<RegularizationTermEnergy, 1, 1, 1, 1, 1>(
-                new RegularizationTermEnergy());
+            CostFunction* regularization_energy = new AutoDiffCostFunction<RegularizationTermEnergy, 2, 1, 1, 1, 1>(new RegularizationTermEnergy());
             problem.AddResidualBlock(regularization_energy, nullptr, &X[i], &Y[i], &X[v_index], &Y[v_index]);
         }
-    }*/
+    }
 
     Solver::Options options;
     options.minimizer_progress_to_stdout = true;
@@ -216,20 +216,6 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
 
     std::cout << summary.BriefReport() << "\n";
     
-
-    /*for (size_t i = 0; i < vertices_length; i++)
-    {
-        if (m_vertices[i].x == 0 || m_vertices[i].x == nw * lw || m_vertices[i].y == 0 || m_vertices[i].y == nh * lh)
-            continue;
-        double x=0., y=0.;
-        for (int v = 0; v < m_v_neighbors[i].indices.size(); ++v) {
-            int v_index = m_v_neighbors[i].indices[v];
-            x += X[v_index];
-            y += Y[v_index];
-        }
-        X[i] = x / 4.0;
-        Y[i] = y / 4.0;
-    }*/
 
     for (size_t i = 0; i < vertices_length; i++)
     {
