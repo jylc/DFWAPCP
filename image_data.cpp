@@ -121,37 +121,12 @@ const void ImageData::meshInfo()const
 
 const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, int flag)const
 {
-	//std::vector<short*> rectangle_infos;
-	//FaceDetect face(m_img);
-	//rectangle_infos = face.Detect();    //面部框的信息及其中点信息
-	
 	cv::Mat result_img = meshTransform(vertices);//点化图
-	/*for (auto it = rectangle_infos.cbegin(); it != rectangle_infos.cend(); ++it)
-	{
-		int confidence = (*it)[0];
-		int x = (*it)[1];
-		int y = (*it)[2];
-		int w = (*it)[3];
-		int h = (*it)[4];
-		if (confidence <= 70)
-			continue;
-
-		char s_score[255];
-		snprintf(s_score, 255, "%d", confidence);
-		cv::putText(result_img, s_score, cv::Point(x, y - 3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
-		rectangle(result_img, Rect(x - w / 2, y - h, 2 * w, 2 * h), Scalar(0, 255, 0), 2);
-	}*/
+	
 	const std::vector<bool>& face_weights = faceMaskWeight();
 	//默认显示原图网格
 	if (flag == -1)
 		return result_img;
-	//else if (flag == 0)
-	//	drawVerticesOnImg(result_img, old_vertices, old_vertices, face_weights);
-	//else if(flag ==1)//混合
-	//	drawVerticesOnImg(result_img, old_vertices, new_vertices, face_weights);
-	//else if(flag==2)//stereo
-	//	drawVerticesOnImg(result_img, new_vertices, new_vertices, face_weights);
-	//else if (flag == 3)//optimized
 	drawVerticesOnImg(result_img, vertices, vertices, face_weights);
 	return result_img;
 }
@@ -175,7 +150,7 @@ const std::vector<Point2> ImageData::getOptimizedStereoImg()const
 	const std::vector<Indices>& v_neighbors = m_mesh_2d->getVertexStructures();
 	const std::vector<int> w_and_h = getCountOfWAndH();
 	const std::vector<double> little_mesh_size = getLittleMeshSize();
-	MeshOptimization mesh_Optimization(src_img, face_region, new_vertices, old_vertices, edges, face_weights, v_neighbors, w_and_h,little_mesh_size);
+	MeshOptimization mesh_Optimization(src_img,  new_vertices, old_vertices, edges, face_weights, v_neighbors, w_and_h,little_mesh_size);
 
 	std::vector<cv::Point2f> optimized_vertices;
 	optimized_vertices.reserve(old_vertices.size());
@@ -366,7 +341,6 @@ const void ImageData::drawVerticesOnImg(cv::Mat& src_img,const std::vector<Point
 		cv::circle(src_img, vertice, 1, weights[i++] ? cv::Scalar(0, 255, 0) : cv::Scalar(0, 0, 255));
 	}
 }
-
 
 const std::vector<Point2> ImageData::mixedMesh(
 	const std::vector<Point2>& old_vertices, 

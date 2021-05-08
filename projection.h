@@ -37,13 +37,12 @@ protected:
 class StereoProjection :protected Projection
 {
 public:
-	StereoProjection(const cv::Mat& _src_img,float _focal_length=600.f) :Projection(_src_img)
+	StereoProjection(const cv::Mat& _src_img,float _fov_rads = 97.f) :Projection(_src_img)
 	{
-		focal_length = _focal_length;
-		n = width;
-		m = height;
+		cols = width;
+		rows = height;
 		scale = 1.f;
-		fov_rads = 97.f;
+		fov_rads = _fov_rads;
 	}
 
 	//Stereographic projection
@@ -53,18 +52,16 @@ private:
 	const float calculateExtent()const;
 	const float fovToFocal(float fov,float d)const;
 private:
-	float focal_length;
 	float fov_rads;
 	float scale;
-	int n;//列
-	int m;//行
+	int cols;//列
+	int rows;//行
 };
 
 class MeshOptimization:protected Projection
 {
 public:
 	MeshOptimization(const cv::Mat& _src_img,
-		const std::vector<cv::Rect2i>& _face_region,
 		const std::vector<Point2>& _stereo_mesh,
 		const std::vector<Point2>& _vertices,
 		const std::vector<Edge>& _edges,
@@ -74,7 +71,6 @@ public:
 		const std::vector<double> _little_mesh_size,
 		float _focal_length = 600.0f)
 		:Projection(_src_img),
-		m_face_region(_face_region),
 		m_stereo_mesh(_stereo_mesh),
 		m_vertices(_vertices),
 		m_edges(_edges),
@@ -83,26 +79,13 @@ public:
 		little_mesh_size(_little_mesh_size),
 		w_and_h(_w_and_h)
 	{}
-	//默认使用各种参数进行网格优化
-	/*===================START===================*/
-	//解析解求解，未完成
-	/*const void getFaceObjectiveTerm(std::vector<Triplet<double>>& triplets,
-		std::vector<std::pair<int, double>>& b_vector, bool flag = true)const;
-	const void getLineBlendingTerm(std::vector<Triplet<double>>& triplets,
-		std::vector<std::pair<int, double>>& b_vector)const;
-	std::vector<Point2> getImageVerticesBySolving(std::vector<Triplet<double>>& triplets,
-		const std::vector<std::pair<int, double>>& b_vector);*/
-	/*==================END====================*/
 
 	/*===================START===================*/
 	//数值解求解
 	const void getImageVerticesBySolving(std::vector<cv::Point2f>& optimized_vertices);
 	/*==================END====================*/
-private:
-	const void verticeSetsOfFaces()const;
 	
 private:
-	const std::vector<cv::Rect2i>& m_face_region;//面部区域
 	const std::vector<Point2>& m_stereo_mesh;//形变后网格点
 	const std::vector<Point2>& m_vertices;//原网格点
 	const std::vector<Edge>& m_edges;

@@ -10,11 +10,11 @@ const cv::Mat StereoProjection::stereoTransformation() const{
 
     float x, y, z, u, v, r;
 
-    float center_x = n / 2;//列
-    float center_y = m / 2;//行
+    float center_x = cols / 2;//列
+    float center_y = rows / 2;//行
     cv::Mat res = cv::Mat::zeros(src_img.size(), CV_8UC3);
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n; j++) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
             x = j;
             y = i;
             u = x - center_x;
@@ -23,7 +23,7 @@ const cv::Mat StereoProjection::stereoTransformation() const{
             // perspective
             // apply Z-B transformation to (u,v)
             float lambda = .0f;
-            float R = MIN(m,n) / 2;
+            float R = MIN(rows,cols) / 2;
             float focal_length = 600.f;
             float alpha = atan2f(v, u);
             float r = hypotf(u, v);
@@ -33,7 +33,7 @@ const cv::Mat StereoProjection::stereoTransformation() const{
             x = (u + center_x) ;
             y = (center_y - v) ;
             //
-            if (x >= 0 && x < n && y >= 0 && y < m)
+            if (x >= 0 && x < cols && y >= 0 && y < rows)
             {
                 res.at<cv::Vec3b>(y, x) = src_img.at<cv::Vec3b>(i, j);
             }
@@ -63,8 +63,8 @@ const std::vector<Point2> StereoProjection::stereoTramsformation(const std::vect
 {
     float phi, x, y, z, u, v, r;
 
-    float center_x = n / 2;//列
-    float center_y = m / 2;//行
+    float center_x = cols / 2;//列
+    float center_y = rows / 2;//行
     std::vector<Point2> newVertices;
     newVertices.reserve(vertices.size());
     
@@ -79,7 +79,7 @@ const std::vector<Point2> StereoProjection::stereoTramsformation(const std::vect
             // perspective
             // apply Z-B transformation to (u,v)
             float lambda = .0f;
-            float R = MIN(m, n) / 2;
+            float R = MIN(rows, cols) / 2;
             float focal_length = fovToFocal(fov_rads*M_PI/180.f, R*3);
             float alpha = atan2f(v, u);
             float r = hypotf(u, v);
@@ -88,7 +88,7 @@ const std::vector<Point2> StereoProjection::stereoTramsformation(const std::vect
             v = ru * sinf(alpha);
             x = u + center_x;
             y = center_y - v;
-            if (x >= 0 && x < n && y >= 0 && y < m)
+            if (x >= 0 && x < cols && y >= 0 && y < rows)
             {
                 newVertices.push_back(Point2(x, y));
             }
@@ -130,24 +130,21 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
 {
     google::InitGoogleLogging("DFWAPCP");
 
-    double* X;
-    double* Y;
     double right, bottom;
     const size_t vertices_length = m_vertices.size();
+    std::vector<std::pair<double, double>> vertices;
+    vertices.reserve(vertices_length);
     int nw = w_and_h[0];
     int nh = w_and_h[1];
     int lw = little_mesh_size[0];
     int lh = little_mesh_size[1];
     std::vector<double> S = { 1.,0.,0.,1. };
-    X = (double*)malloc(vertices_length*sizeof(double));
-    Y = (double*)malloc(vertices_length*sizeof(double));
     for (size_t i = 0; i < vertices_length; i++)
     {
-        X[i] =double(m_vertices[i].x);
-        Y[i] =double(m_vertices[i].y);
+        vertices.emplace_back(double(m_vertices[i].x), double(m_vertices[i].y));
     }
-    right = X[vertices_length - 1];
-    bottom = Y[vertices_length - 1];
+    right = vertices.back().first;
+    bottom = vertices.back().second;
     Problem problem;
     for (size_t i = 0; i < vertices_length; i++)
     {
@@ -160,14 +157,12 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
         float m = 1.f / (1.f + exp2f(-(r - ra) / rb));
 
         float w = m_weights[i] ? 1. : 0.;
-        if (m_vertices[i].x == 0 || m_vertices[i].x == nw * lw || m_vertices[i].y == 0 || m_vertices[i].y == nh * lh)
-            continue;
         CostFunction* face_energy = new AutoDiffCostFunction<FaceObjectTermEnergy, 2, 1, 1>(
             new FaceObjectTermEnergy(m_stereo_mesh[i].x, m_stereo_mesh[i].y, w, m, S));
-        problem.AddResidualBlock(face_energy, nullptr, &X[i], &Y[i]);
+        problem.AddResidualBlock(face_energy, nullptr, &vertices[i].first, &vertices[i].second);
     }
     size_t index = 0;
-    bool xp1 = false, yp1 = false, xp2 = false, yp2 = false;
+    bool x_l = false, y_t = false, x_r = false, y_b = false;
     for (int h = 0; h <= nh; ++h)
     {
         for (int w = 0; w <= nw; ++w)
@@ -175,17 +170,17 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
             if (h==0||h==nh||w==0||w==nw)
             {
                 if (h == 0)
-                    yp1 = true;
+                    y_t = true;
                 if (h == nh)
-                    yp2 = true;
+                    y_b = true;
                 if (w == 0)
-                    xp1 = true;
+                    x_l = true;
                 if (w == nw)
-                    xp2 = true;
+                    x_r = true;
                 CostFunction* boundary_energy = new AutoDiffCostFunction<MeshBoundaryTermEnergy, 1, 1, 1>(
-                    new MeshBoundaryTermEnergy(0, right, 0, bottom, xp1, yp1, xp2, yp2));
-                problem.AddResidualBlock(boundary_energy, nullptr, &X[index], &Y[index]);
-                xp1 = false, yp1 = false, xp2 = false, yp2 = false;
+                    new MeshBoundaryTermEnergy(0, right, 0, bottom, x_l, y_t, x_r, y_b));
+                problem.AddResidualBlock(boundary_energy, nullptr, &vertices[index].first, &vertices[index].second);
+                x_l = false, y_t = false, x_r = false, y_b = false;
             }
             index++;
         }
@@ -201,9 +196,9 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
             e_vertice.y /= distance;
             CostFunction* line_energy = new AutoDiffCostFunction<LineBlendingTermEnergy, 3, 1, 1, 1, 1>(
                 new LineBlendingTermEnergy(e_vertice.x, e_vertice.y, 0));
-            problem.AddResidualBlock(line_energy, nullptr, &X[i], &Y[i], &X[v_index], &Y[v_index]);
+            problem.AddResidualBlock(line_energy, nullptr, &vertices[i].first, &vertices[i].second, &vertices[v_index].first, &vertices[v_index].second);
             CostFunction* regularization_energy = new AutoDiffCostFunction<RegularizationTermEnergy, 2, 1, 1, 1, 1>(new RegularizationTermEnergy());
-            problem.AddResidualBlock(regularization_energy, nullptr, &X[i], &Y[i], &X[v_index], &Y[v_index]);
+            problem.AddResidualBlock(regularization_energy, nullptr, &vertices[i].first, &vertices[i].second, &vertices[v_index].first, &vertices[v_index].second);
         }
     }
 
@@ -219,9 +214,8 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
 
     for (size_t i = 0; i < vertices_length; i++)
     {
-        optimized_vertices.emplace_back(cv::Point2f(float(X[i]), float(Y[i])));
+        optimized_vertices.emplace_back(cv::Point2f(float(vertices[i].first), float(vertices[i].second)));
     }
 
 
-    free(X); free(Y);
 }
