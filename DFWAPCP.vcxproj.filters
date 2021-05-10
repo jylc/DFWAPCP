@@ -82,12 +82,6 @@
     <ClCompile Include="exif.cpp">
       <Filter>Source Files\utils</Filter>
     </ClCompile>
-    <ClCompile Include="blending.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
-    <ClCompile Include="demo.cpp">
-      <Filter>Source Files\utils</Filter>
-    </ClCompile>
     <ClCompile Include="image_data.cpp">
       <Filter>Source Files\image</Filter>
     </ClCompile>
@@ -143,9 +137,6 @@
     <ClInclude Include="image_data.h">
       <Filter>Header Files\image</Filter>
     </ClInclude>
-    <ClInclude Include="test_img.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="x64\Debug\uic\ui_effectdrawing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -153,9 +144,6 @@
       <Filter>Header Files\utils</Filter>
     </ClInclude>
     <ClInclude Include="transform.h">
-      <Filter>Header Files\utils</Filter>
-    </ClInclude>
-    <ClInclude Include="blending.h">
       <Filter>Header Files\utils</Filter>
     </ClInclude>
   </ItemGroup>

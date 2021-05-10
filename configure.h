@@ -4,7 +4,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/opencv.hpp>
-
 #include <eigen3/Eigen/SVD>
 #include <eigen3/Eigen/IterativeLinearSolvers>
 using namespace Eigen;

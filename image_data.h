@@ -21,34 +21,31 @@ class ImageData
 {
 public:
 	std::unique_ptr<Mesh2D> m_mesh_2d;
-	cv::Mat m_img, m_rgba_img, alpha_mask, m_grey_img;
+	cv::Mat m_img;
 	const std::string m_file_dir,m_file_name,m_mask_file_dir,m_mask_file_name;
 	ImageData(
 		const std::string& _file_dir,
 		const std::string& _file_name,
 		const std::string& _mask_file_dir,
-		const std::string& _mask_file_name,
-		const double _focal_length);
+		const std::string& _mask_file_name);
 
 	ImageData() = default;
 
 	ImageData& operator=(const ImageData& data)
 	{
 		ImageData tmp(data.m_file_dir, data.m_file_name,
-			data.m_mask_file_dir, data.m_mask_file_name,
-			data.m_focal_length);
+			data.m_mask_file_dir, data.m_mask_file_name);
 		return tmp;
 	}
 
-	const cv::Mat& getGreyImage()const;
-	const std::vector<Point2>& getSrcImage()const;
+	const std::vector<Point2>& getSrcImageVertices()const;
 	const cv::Mat& getMaskImg()const;
-	const cv::Mat& getAlphaMaskImg()const;
 	const cv::Mat getIntersectedImg(const std::vector<Point2>& vertices,int flag=0)const;//面部检测框与模板相交
-	const std::vector<Point2> getStereoImg()const;//stereo projection后的图像
-	const std::vector<Point2> getOptimizedStereoImg()const;
+	const std::vector<Point2> getStereoImgVertices()const;//stereo projection后的图像点坐标
+	const std::vector<Point2> getOptimizedStereoImgVertices()const;
+	const std::vector<Edge>& getEdges()const;
+	const std::vector<Indices>& getVertexStructures()const;
 	const cv::Mat meshTransform(const std::vector<Point2>& new_vertices)const;
-	const void meshInfo()const;
 	void clear();
 	const std::vector<cv::Rect2i> faceDetected()const;
 	const std::vector<bool> faceMaskWeight()const;
@@ -61,11 +58,9 @@ private:
 
 private:
 	mutable std::vector<LineData> m_img_lines;
-	mutable double m_focal_length;
 	mutable cv::Mat m_stereo_img;
 	mutable cv::Mat m_mask_img;
 	mutable std::vector<cv::Rect2i> m_face_region;
-	mutable std::vector<cv::Mat> m_images;
 	int cols, rows;
 };
 

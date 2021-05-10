@@ -217,5 +217,5 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
         optimized_vertices.emplace_back(cv::Point2f(float(vertices[i].first), float(vertices[i].second)));
     }
 
-
+    google::ShutdownGoogleLogging();
 }

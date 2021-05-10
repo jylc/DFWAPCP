@@ -96,9 +96,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="blending.cpp" />
     <ClCompile Include="chronos.cpp" />
-    <ClCompile Include="demo.cpp" />
     <ClCompile Include="effectdrawing.cpp" />
     <ClCompile Include="exif.cpp" />
     <ClCompile Include="face_detect.cpp" />
@@ -119,7 +117,6 @@
     <QtUic Include="effectdrawing.ui" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="blending.h" />
     <ClInclude Include="chronos.h" />
     <ClInclude Include="configure.h" />
     <QtMoc Include="imgcanvas.h" />
@@ -135,7 +132,6 @@
     <ClInclude Include="mesh_2d.h" />
     <ClInclude Include="mesh_grid.h" />
     <ClInclude Include="stb_image.h" />
-    <ClInclude Include="test_img.h" />
     <ClInclude Include="x64\Debug\uic\ui_dfwapcp.h" />
   </ItemGroup>
   <ItemGroup>

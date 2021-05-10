@@ -3,7 +3,6 @@
 #include <opencv2/photo.hpp>
 #include "face_detect.h"
 #include "projection.h"
-#include "blending.h"
 #include "transform.h"
 LineData::LineData(const Point2& _a, const Point2& _b,
 	const double _width, const double  _length):
@@ -16,13 +15,11 @@ LineData::LineData(const Point2& _a, const Point2& _b,
 ImageData::ImageData(const std::string& _file_dir, 
 	const std::string& _file_name,
 	const std::string& _mask_file_dir,
-	const std::string& _mask_file_name,
-	const double _focal_length):
+	const std::string& _mask_file_name):
 m_file_dir(_file_dir),
 m_file_name(_file_name),
 m_mask_file_dir(_mask_file_dir),
-m_mask_file_name(_mask_file_name),
-m_focal_length(_focal_length)
+m_mask_file_name(_mask_file_name)
 {
 	m_img = cv::imread(m_file_dir + m_file_name);
 	if (m_img.empty())
@@ -31,12 +28,7 @@ m_focal_length(_focal_length)
 		exit(-1);
 	}
 	
-	m_rgba_img = cv::imread(m_file_dir + m_file_name, cv::IMREAD_UNCHANGED);
-	if (m_rgba_img.empty())
-	{
-		fprintf(stderr, "cannot load image %s", (m_file_dir + m_file_name).c_str());
-		exit(-1);
-	}
+
 
 	m_mask_img = cv::imread(m_mask_file_dir + m_mask_file_name);
 	if (m_mask_img.empty())
@@ -52,40 +44,17 @@ m_focal_length(_focal_length)
 	{
 		float scale = sqrt(DOWN_SAMPLE_IMAGE_SIZE / original_img_size);	
 		cv::resize(m_img, m_img,cv::Size(), scale, scale);
-		cv::resize(m_rgba_img, m_rgba_img, cv::Size(), scale, scale);
 		cv::resize(m_mask_img, m_mask_img, cv::Size(), scale, scale);
 	}
 
-	assert(m_rgba_img.channels() >= 3);
-	if (m_rgba_img.channels() == 3)
-	{
-		cv::cvtColor(m_rgba_img, m_rgba_img, CV_BGR2BGRA);
-	}
-
-	std::vector<cv::Mat> channels;
-	cv::split(m_rgba_img, channels);
-	alpha_mask = channels[3];
 	m_mesh_2d = std::make_unique<MeshGrid>(m_img.cols, m_img.rows);
 }
 
 
-const cv::Mat& ImageData::getGreyImage()const
-{
-	if(m_grey_img.empty())
-	{
-		cv::cvtColor(m_img, m_grey_img, CV_BGR2GRAY);
-	}
-	return m_grey_img;
-}
 
-const std::vector<Point2>& ImageData::getSrcImage()const
+const std::vector<Point2>& ImageData::getSrcImageVertices()const
 {
 	return m_mesh_2d->getVertices();
-}
-
-const cv::Mat& ImageData::getAlphaMaskImg()const
-{
-	return alpha_mask;
 }
 
 const cv::Mat& ImageData::getMaskImg()const
@@ -101,28 +70,34 @@ const cv::Mat& ImageData::getMaskImg()const
 void ImageData::clear()
 {
 	m_img.release();
-	m_rgba_img.release();
-	alpha_mask.release();
-	m_grey_img.release();
 	m_img_lines.clear();
 }
 
-const void ImageData::meshInfo()const
-{
-	std::cout << "nw = " << m_mesh_2d->nw <<
-		" , nh = " << m_mesh_2d->nh <<
-		" ,lw = " << m_mesh_2d->lw <<
-		" ,lh = " << m_mesh_2d->lh <<
-		"\n mesh vertices counts = "<<m_mesh_2d->getVertices().size()<<
-		"\n mesh vertices center's count = "<<m_mesh_2d->getPolygonsCenter().size() <<
-		"\n mesh edges = "<<m_mesh_2d->getEdges().size()<< std::endl;
 
-}
 
 const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, int flag)const
 {
 	cv::Mat result_img = meshTransform(vertices);//点化图
-	
+	std::vector<short*> rectangle_infos;
+	FaceDetect face(m_img);
+	rectangle_infos = face.Detect();    //面部框的信息及其中点信息
+
+	for (auto it = rectangle_infos.cbegin(); it != rectangle_infos.cend(); ++it)
+	{
+		int confidence = (*it)[0];
+		int x = (*it)[1];
+		int y = (*it)[2];
+		int w = (*it)[3];
+		int h = (*it)[4];
+		if (confidence <= 70)
+			continue;
+
+		char s_score[255];
+		snprintf(s_score, 255, "%d", confidence);
+		cv::putText(result_img, s_score, cv::Point(x, y - 3), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 1);
+		rectangle(result_img, Rect(x - w / 2, y - h, 2 * w, 2 * h), Scalar(0, 255, 0), 2);
+	}
+
 	const std::vector<bool>& face_weights = faceMaskWeight();
 	//默认显示原图网格
 	if (flag == -1)
@@ -131,21 +106,29 @@ const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, 
 	return result_img;
 }
 
-const std::vector<Point2> ImageData::getStereoImg()const
+const std::vector<Point2> ImageData::getStereoImgVertices()const
 {
 	cv::Mat src_img = m_img.clone();
 	StereoProjection stereo_projection(src_img);
 	return stereo_projection.stereoTramsformation(m_mesh_2d->getVertices());
 }
+const std::vector<Edge>& ImageData::getEdges()const
+{
+	return m_mesh_2d->getEdges();
+}
 
-const std::vector<Point2> ImageData::getOptimizedStereoImg()const
+const std::vector<Indices>& ImageData::getVertexStructures()const
+{
+	return m_mesh_2d->getVertexStructures();
+}
+
+const std::vector<Point2> ImageData::getOptimizedStereoImgVertices()const
 {
 	const cv::Mat& src_img = m_img.clone();
 	const std::vector<Point2>& old_vertices = m_mesh_2d->getVertices();
 	StereoProjection stereo_projection(src_img);
 	const std::vector<Point2>& new_vertices = stereo_projection.stereoTramsformation(old_vertices);
 	const std::vector<bool>& face_weights = faceMaskWeight();
-	const std::vector<cv::Rect2i>& face_region = faceDetected();
 	const std::vector<Edge>& edges = m_mesh_2d->getEdges();
 	const std::vector<Indices>& v_neighbors = m_mesh_2d->getVertexStructures();
 	const std::vector<int> w_and_h = getCountOfWAndH();

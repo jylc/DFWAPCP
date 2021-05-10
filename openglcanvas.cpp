@@ -331,7 +331,7 @@ void OpenGLCanvas::load_image(std::string new_image) {
     img_info.push_back("G:/VSProject/DFWAPCP/data/masks/");
     img_info.push_back(s);
 
-    img_data_ptr = std::make_shared<ImageData>(img_info[0], img_info[1], img_info[2], img_info[3], focal_length);
+    img_data_ptr = std::make_shared<ImageData>(img_info[0], img_info[1], img_info[2], img_info[3]);
     fprintf(stderr, "input_image_file : %s\n", input_image_file);
     
 }
@@ -771,4 +771,5 @@ void OpenGLCanvas::show_effected_imgs()
 {
     effectdrawing* drawing= new effectdrawing(img_data_ptr);
     drawing->show();
+    drawing->setAttribute(Qt::WA_DeleteOnClose);
 }

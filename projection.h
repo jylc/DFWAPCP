@@ -7,12 +7,7 @@
 #include "ceres/ceres.h"
 #include "glog/logging.h"
 using ceres::AutoDiffCostFunction;
-using ceres::DynamicAutoDiffCostFunction;
-using ceres::DynamicNumericDiffCostFunction;
 using ceres::CostFunction;
-using ceres::CauchyLoss;
-using ceres::TrivialLoss;
-using ceres::HuberLoss;
 using ceres::Problem;
 using ceres::Solve;
 using ceres::Solver;
@@ -68,8 +63,7 @@ public:
 		const std::vector<bool>& _weights,
 		const std::vector<Indices>& _v_neighbors,
 		const std::vector<int>& _w_and_h,
-		const std::vector<double> _little_mesh_size,
-		float _focal_length = 600.0f)
+		const std::vector<double> _little_mesh_size)
 		:Projection(_src_img),
 		m_stereo_mesh(_stereo_mesh),
 		m_vertices(_vertices),
@@ -84,7 +78,10 @@ public:
 	//数值解求解
 	const void getImageVerticesBySolving(std::vector<cv::Point2f>& optimized_vertices);
 	/*==================END====================*/
-	
+
+	~MeshOptimization() {
+		std::cout << "release mesh optimization" << std::endl;
+	}
 private:
 	const std::vector<Point2>& m_stereo_mesh;//形变后网格点
 	const std::vector<Point2>& m_vertices;//原网格点
