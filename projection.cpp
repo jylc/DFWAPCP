@@ -161,6 +161,7 @@ const void MeshOptimization::getImageVerticesBySolving(std::vector<cv::Point2f>&
             new FaceObjectTermEnergy(m_stereo_mesh[i].x, m_stereo_mesh[i].y, w, m, S));
         problem.AddResidualBlock(face_energy, nullptr, &vertices[i].first, &vertices[i].second);
     }
+
     size_t index = 0;
     bool x_l = false, y_t = false, x_r = false, y_b = false;
     for (int h = 0; h <= nh; ++h)

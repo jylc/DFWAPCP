@@ -47,6 +47,13 @@ m_mask_file_name(_mask_file_name)
 		cv::resize(m_mask_img, m_mask_img, cv::Size(), scale, scale);
 	}
 
+	int nw = m_img.cols / GRID_SIZE + (m_img.cols % GRID_SIZE != 0);//宽度的网格数
+	int nh = m_img.rows / GRID_SIZE + (m_img.rows % GRID_SIZE != 0);//高度的网格数
+	int lw = m_img.cols / (double)nw;//网格尺寸
+	int lh = m_img.rows / (double)nh;//网格尺寸
+	cv::copyMakeBorder(m_img, m_img, 4 * lw, 4 * lw, 4 * lh, 4 * lh, cv::BORDER_REPLICATE);
+	cv::copyMakeBorder(m_mask_img, m_mask_img, 4 * lw, 4 * lw, 4 * lh, 4 * lh, cv::BORDER_REPLICATE);
+
 	m_mesh_2d = std::make_unique<MeshGrid>(m_img.cols, m_img.rows);
 }
 
@@ -81,6 +88,13 @@ const cv::Mat ImageData::getIntersectedImg(const std::vector<Point2>& vertices, 
 	std::vector<short*> rectangle_infos;
 	FaceDetect face(m_img);
 	rectangle_infos = face.Detect();    //面部框的信息及其中点信息
+
+	int nw = m_mesh_2d->nw;
+	int nh = m_mesh_2d->nh;
+	int lw = m_mesh_2d->lw;
+	int lh = m_mesh_2d->lh;
+	cv::Rect m_select(4 * lw, 4 * lh, (nw - 8) * lw, (nh - 8) * lh);
+	result_img = result_img(m_select);
 
 	for (auto it = rectangle_infos.cbegin(); it != rectangle_infos.cend(); ++it)
 	{
